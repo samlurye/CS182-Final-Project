@@ -4,11 +4,6 @@ from obstacle import Obstacle
 
 class Sensor:
 
-    FRONT = 0
-    BACK = 1
-    LEFT = 2
-    RIGHT = 3
-
     def __init__(self, direction):
         self.maxDist = 400
         self.direction = math.radians(direction)
@@ -21,14 +16,6 @@ class Sensor:
         carHeading = (math.cos(math.radians(world.car.orientation)), math.sin(math.radians(world.car.orientation)))
         sensorHeading = rotateVector(carHeading, self.direction)
         self.end = (self.maxDist * sensorHeading[0] + self.start[0], -self.maxDist * sensorHeading[1] + self.start[1])
-        """if self.direction == Sensor.FRONT:
-            self.end = (self.maxDist * carHeading[0] + self.start[0], -self.maxDist * carHeading[1] + self.start[1])
-        elif self.direction == Sensor.BACK:
-            self.end = (-self.maxDist * carHeading[0] + self.start[0], self.maxDist * carHeading[1] + self.start[1])
-        elif self.direction == Sensor.LEFT:
-            self.end = (-self.maxDist * carHeading[1] + self.start[0], -self.maxDist * carHeading[0] + self.start[1])
-        elif self.direction == Sensor.RIGHT:
-            self.end = (self.maxDist * carHeading[1] + self.start[0], self.maxDist * carHeading[0] + self.start[1])"""
         self.beam = pygame.draw.line(world.screen, (0, 255, 0), self.start, self.end, 2)
 
     def getReading(self, world):
