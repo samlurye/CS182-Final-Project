@@ -1,6 +1,7 @@
 import pygame
 import math
 from obstacle import Obstacle
+import numpy as np
 
 class Sensor:
 
@@ -10,6 +11,7 @@ class Sensor:
         self.beam = None
         self.start = (0, 0)
         self.end = (0, 0)
+        self.noise = 10
 
     def update(self, world):
         self.start = world.car.center()
@@ -31,8 +33,12 @@ class Sensor:
                                 nearestHit = hit
                                 distToNearestHit = distToHit
         if nearestHit:
+            nearestHit = self.addNoise(nearestHit)
             pygame.draw.rect(world.screen, (255, 0, 0), (nearestHit[0] - 5, nearestHit[1] - 5, 10, 10))
         return nearestHit
+
+    def addNoise(self, point):
+        return point[0] + np.random.normal(0, self.noise), point[1] + np.random.normal(0, self.noise)
 
 
 class SensorModel:
