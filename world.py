@@ -1,7 +1,7 @@
 import pygame
 import math
 from obstacle import Obstacle
-from car import Car
+from car import *
 
 class World:
 
@@ -13,7 +13,6 @@ class World:
         pygame.display.set_caption('CS182 Final Project')   # text at the top of the window
         self.clock = pygame.time.Clock()
         self.isRunning = True
-        self.car = Car(self.displayWidth * 0.45, self.displayHeight * 0.8)
         self.obstacles = [
             Obstacle(0, -10, self.displayWidth, 10),                    # top screen border
             Obstacle(self.displayWidth, 0, 10, self.displayHeight),     # right screen border
@@ -26,6 +25,7 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
+        self.car = LocalizationAgent(self.displayWidth * 0.45, self.displayHeight * 0.8, self)
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
 

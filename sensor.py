@@ -33,12 +33,14 @@ class Sensor:
                                 nearestHit = hit
                                 distToNearestHit = distToHit
         if nearestHit:
-            nearestHit = self.addNoise(nearestHit)
+            nearestHit = self.addNoise(nearestHit, distToNearestHit)
             pygame.draw.rect(world.screen, (255, 0, 0), (nearestHit[0] - 5, nearestHit[1] - 5, 10, 10))
         return nearestHit
 
-    def addNoise(self, point):
-        return point[0] + np.random.normal(0, self.noise), point[1] + np.random.normal(0, self.noise)
+    def addNoise(self, point, distToPoint):
+        scale = np.random.normal(0, self.noise)
+        return point[0] + scale / self.maxDist * (self.end[0] - self.start[0]), point[1] \
+                + scale / self.maxDist * (self.end[1] - self.start[1])
 
 
 class SensorModel:

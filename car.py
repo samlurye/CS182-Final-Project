@@ -1,6 +1,7 @@
 import pygame
 import math
 from sensor import SensorModel
+import random
 
 ################## DON'T FORGET TO CITE THIS CODE #########################
 def rot_center(image, angle):
@@ -64,6 +65,48 @@ class Car:
 
     def center(self):
         return self.xy[0] + self.size[0] / 2., self.xy[1] + self.size[1] / 2.
+
+class LocalizationAgent(Car):
+
+    def __init__(self, x, y, world):
+        Car.__init__(self, x, y)
+        self.numParticles = 1000
+        self.particles = self.generateNParticles(self.numParticles, world)
+
+    def generateNParticles(self, n, world):
+        particles = []
+        for i in range(n):
+            success = False
+            while not success:
+                success = True
+                point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
+                for obstacle in world.obstacles:
+                    if obstacle.collidepoint(point):
+                        success = False
+                        break
+                if success:
+                    particles.append(point)
+        return particles
+
+    def updateParticles(self, world):
+        removals = 0
+        for i in range(len(self.particles)):
+            self.particles[i] = (self.particles[i][0] + self.velocity[0], self.particles[i][1] + self.velocity[1])
+            for obstacle in world.obstacles:
+                if obstacle.collidepoint(self.particles[i]):
+                    removals += 1
+                    self.particles[i] = None
+                    break
+            if self.particles[i]:
+                pygame.draw.rect(world.screen, (0, 0, 0), (self.particles[i][0], self.particles[i][1], 5, 5))
+        for removal in range(removals):
+            self.particles.remove(None)
+            self.numParticles -= 1
+
+    def update(self, world):
+        Car.update(self, world)
+        self.updateParticles(world)
+
 
 
 
