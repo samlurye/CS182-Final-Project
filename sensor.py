@@ -2,45 +2,82 @@ import pygame
 import math
 from obstacle import Obstacle
 import numpy as np
+import scipy.stats
 
 class Sensor:
 
+    NORMALCDF = scipy.stats.norm.cdf
+
     def __init__(self, direction):
+        # sensing distance
         self.maxDist = 400
+        # rotation angle with respect to car's direction
         self.direction = math.radians(direction)
+        # line that represents the beam of the sensor
         self.beam = None
+        # starting point of beam (i.e., the car)
         self.start = (0, 0)
+        # end point of beam
         self.end = (0, 0)
+        # standard deviation (or maybe variance, need to check) of normally distributed error of sensor
         self.noise = 10
 
+    # update sensor graphics
     def update(self, world):
         self.start = world.car.center()
-        carHeading = (math.cos(math.radians(world.car.orientation)), math.sin(math.radians(world.car.orientation)))
-        sensorHeading = rotateVector(carHeading, self.direction)
-        self.end = (self.maxDist * sensorHeading[0] + self.start[0], -self.maxDist * sensorHeading[1] + self.start[1])
-        self.beam = pygame.draw.line(world.screen, (0, 255, 0), self.start, self.end, 2)
+        self.end = self.getEnd(self.start, self.getHeading(world))
+        pygame.draw.line(world.screen, (0, 255, 0), self.start, self.end, 2)
+        self.beam = (self.start[0], self.start[1], self.end[0], self.end[1])
 
-    def getReading(self, world):
+    # returns (exact sensor reading, noisy sensor reading) given a position and orientation
+    # orientation is always taken from car
+    # if particle is not None, position is taken from particle
+    def getReading(self, world, particle=None):
+        start = self.start
+        end = self.end
+        beam = self.beam
+        if particle:
+            start = particle
+            end = self.getEnd(start, self.getHeading(world))
+            beam = (start[0], start[1], end[0], end[1])
         nearestHit = None
         distToNearestHit = float("inf")
+        # find the first point of collision of the sensor's beam
         for obstacle in world.obstacles:
-            if self.beam.colliderect(obstacle):
+            if obstacle.collideline(beam):
                 for i in range(len(obstacle.corners)):
-                    hit = getIntersection(self.start, self.end, obstacle.corners[i], obstacle.corners[(i + 1) % 4])
+                    hit = getIntersection(start, end, obstacle.corners[i], obstacle.corners[(i + 1) % 4])
                     if hit:
-                        distToHit = dist(hit, self.start)
+                        distToHit = dist(hit, start)
                         if obstacle.collidepoint(hit) and distToHit < distToNearestHit:
                                 nearestHit = hit
                                 distToNearestHit = distToHit
+        noisyNearestHit = None
         if nearestHit:
-            nearestHit = self.addNoise(nearestHit, distToNearestHit)
-            pygame.draw.rect(world.screen, (255, 0, 0), (nearestHit[0] - 5, nearestHit[1] - 5, 10, 10))
-        return nearestHit
+            noisyNearestHit = self.addNoise(nearestHit, distToNearestHit)
+            # if getting reading for car, draw noisy hit to screen
+            if not particle:
+                pygame.draw.rect(world.screen, (255, 0, 0), (noisyNearestHit[0] - 5, noisyNearestHit[1] - 5, 10, 10))
+        return nearestHit, noisyNearestHit
 
     def addNoise(self, point, distToPoint):
         scale = np.random.normal(0, self.noise)
         return point[0] + scale / self.maxDist * (self.end[0] - self.start[0]), point[1] \
                 + scale / self.maxDist * (self.end[1] - self.start[1])
+
+    # get direction of sensor beam
+    def getHeading(self, world):
+        carHeading = (math.cos(math.radians(world.car.orientation)), math.sin(math.radians(world.car.orientation)))
+        return rotateVector(carHeading, self.direction)
+
+    # get endpoint of sensor beam
+    def getEnd(self, start, heading):
+        return (self.maxDist * heading[0] + start[0], -self.maxDist * heading[1] + start[1])
+
+    # given the expected reading, returns the probability that the noisy reading is within a given window of size 2
+    def getEmissionProbability(self, expectedReading, noisyReading):
+        diff = math.floor(dist(expectedReading, noisyReading))
+        return Sensor.NORMALCDF(diff + 1, 0, self.noise) - Sensor.NORMALCDF(diff - 1, 0, self.noise)
 
 
 class SensorModel:
@@ -49,9 +86,22 @@ class SensorModel:
         self.sensors = [Sensor(45 * i) for i in range(8)]
 
     def getReadings(self, world):
+        readings = []
         for sensor in self.sensors:
             sensor.update(world)
-            hits = sensor.getReading(world)
+            readings.append(sensor.getReading(world))
+        return readings
+
+    # returns p(all sensor readings | particle position, car orientation, map)
+    def getEmissionProbability(self, world, particle):
+        emissionProbability = 1
+        for sensor in self.sensors:
+            expectedReading, noisyReading = sensor.getReading(world, particle)
+            if expectedReading and noisyReading:
+                emissionProbability *= sensor.getEmissionProbability(expectedReading, noisyReading)
+            else:
+                emissionProbability = 0
+        return emissionProbability
 
 ### https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python ####
 def line(p1, p2):

@@ -25,7 +25,7 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.car = LocalizationAgent(self.displayWidth * 0.45, self.displayHeight * 0.8, self)
+        self.car = LocalizationAgent(155, 5, self)
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
 
