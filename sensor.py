@@ -54,16 +54,19 @@ class Sensor:
                                 distToNearestHit = distToHit
         noisyNearestHit = None
         if nearestHit:
-            noisyNearestHit = self.addNoise(nearestHit, distToNearestHit)
+            noisyNearestHit = self.addNoise(nearestHit, distToNearestHit, world)
             # if getting reading for car, draw noisy hit to screen
             if not particle:
                 pygame.draw.rect(world.screen, (255, 0, 0), (noisyNearestHit[0] - 5, noisyNearestHit[1] - 5, 10, 10))
         return nearestHit, noisyNearestHit
 
-    def addNoise(self, point, distToPoint):
+    def addNoise(self, point, distToPoint, world):
         scale = np.random.normal(0, self.noise)
-        return point[0] + scale / self.maxDist * (self.end[0] - self.start[0]), point[1] \
+        noise = point[0] + scale / self.maxDist * (self.end[0] - self.start[0]), point[1] \
                 + scale / self.maxDist * (self.end[1] - self.start[1])
+        if noise[0] >= 0 and noise[0] <= world.displayWidth and noise[1] >= 0 and noise[1] <= world.displayHeight:
+            return noise
+        return point
 
     # get direction of sensor beam
     def getHeading(self, world):
@@ -92,6 +95,8 @@ class SensorModel:
             readings.append(sensor.getReading(world))
         return readings
 
+    def getSensors(self):
+        return self.sensors
     # returns p(all sensor readings | particle position, car orientation, map)
     def getEmissionProbability(self, world, particle):
         emissionProbability = 1
@@ -100,7 +105,7 @@ class SensorModel:
             if expectedReading and noisyReading:
                 emissionProbability *= sensor.getEmissionProbability(expectedReading, noisyReading)
             else:
-                emissionProbability = 0
+                emissionProbability = 0.0
         return emissionProbability
 
 ### https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python ####

@@ -1,6 +1,6 @@
 import pygame
 import math
-from sensor import SensorModel
+from sensor import SensorModel, Sensor
 import random
 import time
 import numpy
@@ -32,6 +32,7 @@ class Car:
         self.drag = .6                          # drag force exerted on car
         self.dt = 0.1                           # time step
         self.sensorModel = SensorModel()
+        
 
     def getVelocity(self, dirInput):
         # update speed according to forces exerted on car
@@ -68,31 +69,160 @@ class Car:
     def center(self):
         return self.xy[0] + self.size[0] / 2., self.xy[1] + self.size[1] / 2.
 
+    def normalize(self, dist):
+        tot = sum(dist.values())
+        for i in dist.keys():
+            dist[i] = dist[i]//tot
+
+
+
 class LocalizationAgent(Car):
 
-    """Human-controlled car that localizes using particle filtering"""
+    """Human-controlled car that maps using sensor data"""
 
     def __init__(self, x, y, world):
         Car.__init__(self, x, y)
-        self.numParticles = 500
+        self.numParticles = 5000
         self.particles = self.generateNParticles(self.numParticles, world)
+        self.width = world.displayWidth
+        self.height = world.displayHeight
+        self.map = self.blankMap()
+        self.occupancyGrid = dict()
+        
 
     # generates n uniformly distributed particles
     def generateNParticles(self, n, world):
         particles = []
         for i in range(n):
-            success = False
-            while not success:
-                success = True
-                point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
-                for obstacle in world.obstacles:
-                    if obstacle.collidepoint(point):
-                        success = False
-                        break
-                if success:
-                    particles.append(point)
+            """
+            success = True
+            while True:
+            """
+            point = (random.randint(0, world.displayWidth - 1), random.randint(0, world.displayHeight - 1))
+            particles.append(point)
         return particles
 
+    def blankMap(self):
+        dist = dict()
+        for i in range(self.width):
+            for j in range(self.height):
+                dist[(i, j)] = 0.0
+        return dist
+
+
+
+    def observe(self, world):
+        readings = self.sensorModel.getReadings(world)
+        sensors = self.sensorModel.getSensors()
+        for read in readings:
+            pos = self.xy
+            end = (round(read[1][0]), round(read[1][1]))
+            slope = 0
+            if pos[0] - end[0] == 0:
+                if pos[1] < end[1]:
+                    slope = 1
+                else:
+                    slope = -1
+            else:
+                slope = (pos[1] - end[1]) // (pos[0] - end[0])
+            while(abs(pos[0] - end[0]) > 1 and abs(pos[1] - end[1]) > 1):
+                if not pos in self.occupancyGrid:
+                    self.occupancyGrid[pos] = dict()
+                    self.occupancyGrid[pos][hit] = 0
+                    self.occupancyGrid[pos][miss] = 0
+                self.occupancyGrid[(round(pos[0]), round(pos[1]))][miss] += 1
+                if(end[0] < pos[0]):
+                    pos[0] -= 1
+                    pos[1] += slope * -1
+                elif(end[0] > pos[0]):
+                    pos[0] += 1
+                    pos[1] += slope
+                else:
+                    pos[1] += slope
+            self.occupancyGrid[end][hit] += 1
+
+    def buildMap(self):
+        for key in self.map.keys():
+            self.map[key] = self.occupancyGrid[key][hit] // (self.occupancyGrid[key][hit] + self.occupancyGrid[key][miss])
+
+    def thresh(self, alpha):
+        for key in self.map.keys():
+            if self.map[key] < alpha:
+                self.map[key] = 0.0
+            else:
+                self.map[key] = 1.0
+
+    def drawMap(self, world):
+        for cell in self.map.keys():
+            if self.map[cell] == 1.0:
+                pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 1, 1))
+
+    def extractBorders(self):
+        points = list()
+        for cell in self.map.keys():
+            if(self.map[cell] == 1.0):
+                points.append(cell)
+
+    def generateRandomMeans(self, width, height, k = 10):
+        means = list()
+        for i in range(k):
+            means.append((numpy.random.randint(0, width), numpy.random.randint(0, height)))
+        return means
+
+    def dist(x1, x2, y1, y2):
+        return sqrt((x1 - y1)^2 + (x2 - y2)^2)
+
+    def iterateMeans(self, clusters, means):
+        for c in range(len(clusters)):
+            cluster = clusters[c]
+            if not len(cluster) == 0:
+                l = len(cluster)
+                means[c] = ((sum(point[0] for point in cluster)/l, \
+                             sum(point[1] for point in cluster)/l ))
+        change = False
+
+        appendList = [[] for i in range len(clusters)]
+        for c in range(len(clusters)):
+            for point in cluster[c]:
+                minIndex = c
+                minDist = dist(point, means[c])
+                for m in range(means):
+                    d = dist(point, means[m])
+                    if d < minDist:
+                        minIndex = m
+                        minDist = d
+                if minIndex != c:
+                    change = True
+                    appendList[minIndex] = point
+                    clusters[c].pop(point)
+        if not change:
+            return clusters
+        else:
+            for i in range(len(appendList)):
+                clusters[i].extend(appendList[i])
+            self.iterateMeans(clusters, means)
+
+
+
+    def kMeans(self, points, width, height):
+        means = self.generateRandomMeans(width, height)
+        clusters = [[] for i in range len(means)]
+        points = self.extractBorders()
+        for point in points:
+            minIndex = 0
+            minDist = sys.maxint
+            for m in range(len(means)):
+                d = dist(point, means[m])
+                if d < minDist:
+                    minIndex = m
+                    minDist = d
+        return self.iterateMeans(clusters, means)
+
+
+
+
+
+    """
     def updateParticles(self, world):
         newParticles = []
         emissionProbabilities = []
@@ -101,27 +231,34 @@ class LocalizationAgent(Car):
             self.particles[i] = (self.particles[i][0] + self.velocity[0] + random.randint(-5, 5), self.particles[i][1] + self.velocity[1] + random.randint(-5, 5))
             collision = False
             # check for collisions
+        
             for obstacle in world.obstacles:
                 if obstacle.collidepoint(self.particles[i]):
                     collision = True
                     break
+
             # if particle didn't collide, find P(sensor readings|particle position)
             if not collision:
                 emissionProbabilities.append(self.sensorModel.getEmissionProbability(world, self.particles[i]))
             else:
                 emissionProbabilities.append(0)
+
         # sample new particles
         sumEP = sum(emissionProbabilities)
         emissionProbabilities = [emissionProbabilities[i] / sumEP for i in range(self.numParticles)]
         particleIndices = numpy.random.choice(range(self.numParticles), self.numParticles, True, emissionProbabilities)
         self.particles = [self.particles[particleIndices[i]] for i in range(self.numParticles)]
+    
         # draw particles
         for particle in self.particles:
                 pygame.draw.rect(world.screen, (0, 0, 0), (particle[0], particle[1], 5, 5))
+    """
 
     def update(self, world):
         Car.update(self, world)
-        self.updateParticles(world)
+        self.observe(world)
+
+
 
 
 
