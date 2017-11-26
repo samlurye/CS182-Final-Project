@@ -76,7 +76,7 @@ class Car:
 
 
 
-class LocalizationAgent(Car):
+class MappingAgent(Car):
 
     """Human-controlled car that maps using sensor data"""
 
@@ -94,10 +94,6 @@ class LocalizationAgent(Car):
     def generateNParticles(self, n, world):
         particles = []
         for i in range(n):
-            """
-            success = True
-            while True:
-            """
             point = (random.randint(0, world.displayWidth - 1), random.randint(0, world.displayHeight - 1))
             particles.append(point)
         return particles
@@ -108,8 +104,6 @@ class LocalizationAgent(Car):
             for j in range(self.height):
                 dist[(i, j)] = 0.0
         return dist
-
-
 
     def observe(self, world):
         readings = self.sensorModel.getReadings(world)
