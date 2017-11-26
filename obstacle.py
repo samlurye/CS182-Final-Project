@@ -7,20 +7,6 @@ class Obstacle(pygame.Rect):
     TOPRIGHT = 1
     BOTTOMRIGHT = 2
     BOTTOMLEFT = 3
-    TOP = 4
-    BOTTOM = 5
-    LEFT = 6
-    RIGHT = 7
-    COLLISIONSECTORS = [
-        set([BOTTOM, BOTTOMRIGHT, RIGHT]),
-        set([BOTTOM, BOTTOMLEFT, LEFT]),
-        set([TOP, TOPLEFT, LEFT]),
-        set([TOP, TOPRIGHT, RIGHT]),
-        set([RIGHT, BOTTOMRIGHT, BOTTOM, BOTTOMLEFT, LEFT]),
-        set([RIGHT, TOPRIGHT, TOP, TOPLEFT, LEFT]),
-        set([TOP, TOPRIGHT, RIGHT, BOTTOMRIGHT, BOTTOM]),
-        set([TOP, TOPLEFT, LEFT, BOTTOMLEFT, BOTTOM])
-    ]
 
     def __init__(self, x, y, width, height):
         pygame.Rect.__init__(self, x, y, width, height)
@@ -32,61 +18,57 @@ class Obstacle(pygame.Rect):
         ]
 
     def update(self, world):
-        pygame.draw.rect(world.screen, (0, 0, 255), self)
+        pygame.draw.rect(world.screen, (50, 135, 61), self)
 
     # check to see if point inside obstacle
     def collidepoint(self, point):
         return point[0] >= self.corners[Obstacle.TOPLEFT][0] and point[1] >= self.corners[Obstacle.TOPLEFT][1] and \
                 point[0] <= self.corners[Obstacle.BOTTOMRIGHT][0] and point[1] <= self.corners[Obstacle.BOTTOMRIGHT][1]
 
-    # check if line collides with obstacle
+    # return nearest point of collision and side of collision on rectangle
     def collideline(self, line):
         start = line[0], line[1]
         end = line[2], line[3]
-        if self.collidepoint(end):
-            return True
-        return self.getSector(end) in Obstacle.COLLISIONSECTORS[self.getSector(start)]
+        minDist = float("inf")
+        nearestPoint = None
+        for i in range(4):
+            point = getIntersection(start, end, self.corners[i], self.corners[(i + 1) % 4])
+            if point:
+                if (point[0] - start[0]) * (end[0] - start[0]) + (point[1] - start[1]) * (end[1] - start[1]) >= 0:
+                    distToPoint = dist(point, start)
+                    if distToPoint < minDist:
+                        minDist = distToPoint
+                        nearestPoint = point
+        return nearestPoint
+        
 
-    # sector/obstacle layout
+### https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python ####
+def line(p1, p2):
+    A = (p1[1] - p2[1])
+    B = (p2[0] - p1[0])
+    C = (p1[0]*p2[1] - p2[0]*p1[1])
+    return A, B, -C
 
-          #       #
-      #0  #   #4  # #1
-          #       #
-    # # # # # # # # # # #
-      #6  # Obst. # #7
-          #       #
-    # # # # # # # # # # #
-      #3  #   #5  #  
-          #       # #2
-          #       #
+def intersection(L1, L2):
+    D  = L1[0] * L2[1] - L1[1] * L2[0]
+    Dx = L1[2] * L2[1] - L1[1] * L2[2]
+    Dy = L1[0] * L2[2] - L1[2] * L2[0]
+    if D != 0:
+        x = float(Dx) / D
+        y = float(Dy) / D
+        return x,y
+    else:
+        return False
+#####################################################################################################################
 
-    # so if start point of line segment in sector 1 and end point of line segment in sector 5,
-    # the line must collide with the obstacle
-    
-    def getSector(self, point):
-        top = self.corners[Obstacle.TOPLEFT][1]
-        left = self.corners[Obstacle.TOPLEFT][0]
-        bottom = self.corners[Obstacle.BOTTOMRIGHT][1]
-        right = self.corners[Obstacle.BOTTOMRIGHT][0]
-        if point[0] <= left and point[1] <= top:
-            return Obstacle.TOPLEFT
-        elif point[0] <= left and point[1] <= bottom:
-            return Obstacle.LEFT
-        elif point[0] <= left:
-            return Obstacle.BOTTOMLEFT
-        elif point[0] <= right and point[1] >= bottom:
-            return Obstacle.BOTTOM
-        elif point[1] >= bottom:
-            return Obstacle.BOTTOMRIGHT
-        elif point[1] >= top:
-            return Obstacle.RIGHT
-        elif point[0] >= right:
-            return Obstacle.TOPRIGHT
-        else:
-            return Obstacle.TOP
+def getIntersection(p1, p2, p3, p4):
+    return intersection(line(p1, p2), line(p3, p4))
 
+def dist(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) ** 2 + (p1[1] - p2[1]) ** 2)
 
-
+def rotateVector(v, angle):
+    return math.cos(angle) * v[0] - math.sin(angle) * v[1], math.sin(angle) * v[0] + math.cos(angle) * v[1]
 
 
 
