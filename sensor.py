@@ -69,12 +69,6 @@ class Sensor:
     def getEnd(self, start, heading):
         return (self.maxDist * heading[0] + start[0], -self.maxDist * heading[1] + start[1])
 
-    # given the expected reading, returns the probability that the noisy reading is within a given window of size 2
-    def getEmissionProbability(self, expectedReading, noisyReading):
-        diff = math.floor(dist(expectedReading, noisyReading))
-        return Sensor.NORMALCDF(diff + 1, 0, self.noise) - Sensor.NORMALCDF(diff - 1, 0, self.noise)
-
-
 class SensorModel:
 
     def __init__(self):
@@ -89,16 +83,6 @@ class SensorModel:
 
     def getSensors(self):
         return self.sensors
-    # returns p(all sensor readings | particle position, car orientation, map)
-    def getEmissionProbability(self, world, particle):
-        emissionProbability = 1
-        for sensor in self.sensors:
-            expectedReading, noisyReading = sensor.getReading(world, particle)
-            if expectedReading and noisyReading:
-                emissionProbability *= sensor.getEmissionProbability(expectedReading, noisyReading)
-            else:
-                emissionProbability = 0.0
-        return emissionProbability
 
 ### https://stackoverflow.com/questions/20677795/how-do-i-compute-the-intersection-point-of-two-lines-in-python ####
 def line(p1, p2):
