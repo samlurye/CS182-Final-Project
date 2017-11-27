@@ -87,6 +87,8 @@ class MappingAgent(Car):
         self.displayHeight = world.displayHeight
         self.map = self.blankMap()
         self.occupancyGrid = self.blankOccupancyGrid()
+        self.obstacleCorners = []
+
 
     # generates n uniformly distributed particles
     def generateNParticles(self, n, world):
@@ -212,6 +214,50 @@ class MappingAgent(Car):
                     minIndex = m
                     minDist = d
         return self.iterateMeans(clusters, means)
+
+
+    def corners(self, obstacles):
+        for obstacle in obstacles:
+            obstacle = sorted(obstacle, key=lambda x:x[0])
+            obstacle = sorted(obstacle, key=lambda x:x[1])
+            self.obstacleCorners.append([obstacle[0], obstacle[len(obstacle) - 1]])
+
+
+
+
+
+    """
+    def updateParticles(self, world):
+        newParticles = []
+        emissionProbabilities = []
+        for i in range(len(self.particles)):
+            # update particle according to movement of car
+            self.particles[i] = (self.particles[i][0] + self.velocity[0] + random.randint(-5, 5), self.particles[i][1] + self.velocity[1] + random.randint(-5, 5))
+            collision = False
+            # check for collisions
+        
+            for obstacle in world.obstacles:
+                if obstacle.collidepoint(self.particles[i]):
+                    collision = True
+                    break
+
+            # if particle didn't collide, find P(sensor readings|particle position)
+            if not collision:
+                emissionProbabilities.append(self.sensorModel.getEmissionProbability(world, self.particles[i]))
+            else:
+                emissionProbabilities.append(0)
+
+        # sample new particles
+        sumEP = sum(emissionProbabilities)
+        emissionProbabilities = [emissionProbabilities[i] / sumEP for i in range(self.numParticles)]
+        particleIndices = numpy.random.choice(range(self.numParticles), self.numParticles, True, emissionProbabilities)
+        self.particles = [self.particles[particleIndices[i]] for i in range(self.numParticles)]
+    
+        # draw particles
+        for particle in self.particles:
+                pygame.draw.rect(world.screen, (0, 0, 0), (particle[0], particle[1], 5, 5))
+    """
+
 
     def update(self, world):
         Car.update(self, world)
