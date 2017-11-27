@@ -124,7 +124,7 @@ class LocalizationAgent(Car):
                 else:
                     slope = -1
             else:
-                slope = (pos[1] - end[1]) // (pos[0] - end[0])
+                slope = float((pos[1] - end[1])) / (pos[0] - end[0])
             while(abs(pos[0] - end[0]) > 1 and abs(pos[1] - end[1]) > 1):
                 if not pos in self.occupancyGrid:
                     self.occupancyGrid[pos] = dict()
@@ -143,7 +143,7 @@ class LocalizationAgent(Car):
 
     def buildMap(self):
         for key in self.map.keys():
-            self.map[key] = self.occupancyGrid[key][hit] // (self.occupancyGrid[key][hit] + self.occupancyGrid[key][miss])
+            self.map[key] = float(self.occupancyGrid[key][hit]) / (self.occupancyGrid[key][hit] + self.occupancyGrid[key][miss])
 
     def thresh(self, alpha):
         for key in self.map.keys():
