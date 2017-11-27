@@ -54,7 +54,6 @@ class Car:
         self.xy = (self.xy[0] + self.velocity[0], self.xy[1] + self.velocity[1])
         # draw car to screen
         world.screen.blit(self.image, self.xy)
-        self.sensorModel.getReadings(world)
 
     def checkCollisions(self, world):
         collided = False
@@ -72,7 +71,7 @@ class Car:
     def normalize(self, dist):
         tot = sum(dist.values())
         for i in dist.keys():
-            dist[i] = dist[i]//tot
+            dist[i] = dist[i] / tot
 
 
 
@@ -84,11 +83,10 @@ class MappingAgent(Car):
         Car.__init__(self, x, y)
         self.numParticles = 5000
         self.particles = self.generateNParticles(self.numParticles, world)
-        self.width = world.displayWidth
-        self.height = world.displayHeight
+        self.displayWidth = world.displayWidth
+        self.displayHeight = world.displayHeight
         self.map = self.blankMap()
-        self.occupancyGrid = dict()
-        
+        self.occupancyGrid = self.blankOccupancyGrid()
 
     # generates n uniformly distributed particles
     def generateNParticles(self, n, world):
@@ -100,8 +98,8 @@ class MappingAgent(Car):
 
     def blankMap(self):
         dist = dict()
-        for i in range(self.width):
-            for j in range(self.height):
+        for i in range(self.displayWidth):
+            for j in range(self.displayHeight):
                 dist[(i, j)] = 0.0
         return dist
 
@@ -109,35 +107,39 @@ class MappingAgent(Car):
         readings = self.sensorModel.getReadings(world)
         sensors = self.sensorModel.getSensors()
         for read in readings:
-            pos = self.xy
-            end = (round(read[1][0]), round(read[1][1]))
-            slope = 0
-            if pos[0] - end[0] == 0:
-                if pos[1] < end[1]:
-                    slope = 1
+            if read[1] != None:
+                pos = [self.xy[0], self.xy[1]]
+                end = (round(read[1][0]), round(read[1][1]))
+                self.occupancyGrid[end]["hit"] += 1
+                slope = 0
+                if pos[0] - end[0] == 0:
+                    if pos[1] < end[1]:
+                        slope = 1
+                    else:
+                        slope = -1
                 else:
-                    slope = -1
-            else:
-                slope = (pos[1] - end[1]) // (pos[0] - end[0])
-            while(abs(pos[0] - end[0]) > 1 and abs(pos[1] - end[1]) > 1):
-                if not pos in self.occupancyGrid:
-                    self.occupancyGrid[pos] = dict()
-                    self.occupancyGrid[pos][hit] = 0
-                    self.occupancyGrid[pos][miss] = 0
-                self.occupancyGrid[(round(pos[0]), round(pos[1]))][miss] += 1
-                if(end[0] < pos[0]):
-                    pos[0] -= 1
-                    pos[1] += slope * -1
-                elif(end[0] > pos[0]):
-                    pos[0] += 1
-                    pos[1] += slope
-                else:
-                    pos[1] += slope
-            self.occupancyGrid[end][hit] += 1
+                    slope = float(pos[1] - end[1]) / (pos[0] - end[0])
+                while abs(round(pos[0]) - end[0]) > 1 and abs(round(pos[1]) - end[1]) > 1:
+                    self.occupancyGrid[(round(pos[0]), round(pos[1]))]["miss"] += 1
+                    if end[0] < pos[0]:
+                        pos[0] -= 1
+                        pos[1] += slope * -1
+                    elif end[0] > pos[0]:
+                        pos[0] += 1
+                        pos[1] += slope
+                    else:
+                        pos[1] += slope
+
+    def blankOccupancyGrid(self):
+        occupancyGrid = dict()
+        for i in range(-50, self.displayWidth + 51):
+            for j in range(-50, self.displayHeight + 51):
+                occupancyGrid[(i, j)] = dict(hit = 0, miss = 0)
+        return occupancyGrid
 
     def buildMap(self):
         for key in self.map.keys():
-            self.map[key] = self.occupancyGrid[key][hit] // (self.occupancyGrid[key][hit] + self.occupancyGrid[key][miss])
+            self.map[key] = float(self.occupancyGrid[key]["hit"]) / (self.occupancyGrid[key]["hit"] + self.occupancyGrid[key]["miss"])
 
     def thresh(self, alpha):
         for key in self.map.keys():
@@ -154,7 +156,7 @@ class MappingAgent(Car):
     def extractBorders(self):
         points = list()
         for cell in self.map.keys():
-            if(self.map[cell] == 1.0):
+            if self.map[cell] == 1.0:
                 points.append(cell)
 
     def generateRandomMeans(self, width, height, k = 10):
@@ -164,7 +166,7 @@ class MappingAgent(Car):
         return means
 
     def dist(x1, x2, y1, y2):
-        return sqrt((x1 - y1)^2 + (x2 - y2)^2)
+        return sqrt((x1 - y1) ** 2 + (x2 - y2) ** 2)
 
     def iterateMeans(self, clusters, means):
         for c in range(len(clusters)):
@@ -175,7 +177,7 @@ class MappingAgent(Car):
                              sum(point[1] for point in cluster)/l ))
         change = False
 
-        appendList = [[] for i in range len(clusters)]
+        appendList = [[] for i in range(len(clusters))]
         for c in range(len(clusters)):
             for point in cluster[c]:
                 minIndex = c
@@ -196,11 +198,9 @@ class MappingAgent(Car):
                 clusters[i].extend(appendList[i])
             self.iterateMeans(clusters, means)
 
-
-
     def kMeans(self, points, width, height):
         means = self.generateRandomMeans(width, height)
-        clusters = [[] for i in range len(means)]
+        clusters = [[] for i in range(len(means))]
         points = self.extractBorders()
         for point in points:
             minIndex = 0
@@ -211,42 +211,6 @@ class MappingAgent(Car):
                     minIndex = m
                     minDist = d
         return self.iterateMeans(clusters, means)
-
-
-
-
-
-    """
-    def updateParticles(self, world):
-        newParticles = []
-        emissionProbabilities = []
-        for i in range(len(self.particles)):
-            # update particle according to movement of car
-            self.particles[i] = (self.particles[i][0] + self.velocity[0] + random.randint(-5, 5), self.particles[i][1] + self.velocity[1] + random.randint(-5, 5))
-            collision = False
-            # check for collisions
-        
-            for obstacle in world.obstacles:
-                if obstacle.collidepoint(self.particles[i]):
-                    collision = True
-                    break
-
-            # if particle didn't collide, find P(sensor readings|particle position)
-            if not collision:
-                emissionProbabilities.append(self.sensorModel.getEmissionProbability(world, self.particles[i]))
-            else:
-                emissionProbabilities.append(0)
-
-        # sample new particles
-        sumEP = sum(emissionProbabilities)
-        emissionProbabilities = [emissionProbabilities[i] / sumEP for i in range(self.numParticles)]
-        particleIndices = numpy.random.choice(range(self.numParticles), self.numParticles, True, emissionProbabilities)
-        self.particles = [self.particles[particleIndices[i]] for i in range(self.numParticles)]
-    
-        # draw particles
-        for particle in self.particles:
-                pygame.draw.rect(world.screen, (0, 0, 0), (particle[0], particle[1], 5, 5))
-    """
 
     def update(self, world):
         Car.update(self, world)

@@ -32,32 +32,24 @@ class Sensor:
     # returns (exact sensor reading, noisy sensor reading) given a position and orientation
     # orientation is always taken from car
     # if particle is not None, position is taken from particle
-    def getReading(self, world, particle=None):
+    def getReading(self, world):
         start = self.start
         end = self.end
         beam = self.beam
-        if particle:
-            start = particle
-            end = self.getEnd(start, self.getHeading(world))
-            beam = (start[0], start[1], end[0], end[1])
         nearestHit = None
         distToNearestHit = float("inf")
         # find the first point of collision of the sensor's beam
         for obstacle in world.obstacles:
-            if obstacle.collideline(beam):
-                for i in range(len(obstacle.corners)):
-                    hit = getIntersection(start, end, obstacle.corners[i], obstacle.corners[(i + 1) % 4])
-                    if hit:
-                        distToHit = dist(hit, start)
-                        if obstacle.collidepoint(hit) and distToHit < distToNearestHit:
-                                nearestHit = hit
-                                distToNearestHit = distToHit
+            hit = obstacle.collideline(beam)
+            if hit:
+                distToHit = dist(hit, start)
+                if distToHit < distToNearestHit and distToHit < self.maxDist:
+                    nearestHit = hit
+                    distToNearestHit = distToHit
         noisyNearestHit = None
         if nearestHit:
             noisyNearestHit = self.addNoise(nearestHit, distToNearestHit, world)
-            # if getting reading for car, draw noisy hit to screen
-            if not particle:
-                pygame.draw.rect(world.screen, (255, 0, 0), (noisyNearestHit[0] - 5, noisyNearestHit[1] - 5, 10, 10))
+            pygame.draw.rect(world.screen, (255, 0, 0), (noisyNearestHit[0] - 5, noisyNearestHit[1] - 5, 10, 10))
         return nearestHit, noisyNearestHit
 
     def addNoise(self, point, distToPoint, world):

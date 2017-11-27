@@ -18,12 +18,12 @@ class Obstacle(pygame.Rect):
         ]
 
     def update(self, world):
-        pygame.draw.rect(world.screen, (50, 135, 61), self)
+        pygame.draw.rect(world.screen, (0, 0, 255), self)
 
     # check to see if point inside obstacle
     def collidepoint(self, point):
-        return point[0] >= self.corners[Obstacle.TOPLEFT][0] and point[1] >= self.corners[Obstacle.TOPLEFT][1] and \
-                point[0] <= self.corners[Obstacle.BOTTOMRIGHT][0] and point[1] <= self.corners[Obstacle.BOTTOMRIGHT][1]
+        return round(point[0]) >= self.corners[Obstacle.TOPLEFT][0] and round(point[1]) >= self.corners[Obstacle.TOPLEFT][1] and \
+                round(point[0]) <= self.corners[Obstacle.BOTTOMRIGHT][0] and round(point[1]) <= self.corners[Obstacle.BOTTOMRIGHT][1]
 
     # return nearest point of collision and side of collision on rectangle
     def collideline(self, line):
@@ -33,7 +33,7 @@ class Obstacle(pygame.Rect):
         nearestPoint = None
         for i in range(4):
             point = getIntersection(start, end, self.corners[i], self.corners[(i + 1) % 4])
-            if point:
+            if point and self.collidepoint(point):
                 if (point[0] - start[0]) * (end[0] - start[0]) + (point[1] - start[1]) * (end[1] - start[1]) >= 0:
                     distToPoint = dist(point, start)
                     if distToPoint < minDist:
