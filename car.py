@@ -142,7 +142,10 @@ class MappingAgent(Car):
 
     def buildMap(self):
         for key in self.map.keys():
-            self.map[key] = float(self.occupancyGrid[key]["hit"]) / (self.occupancyGrid[key]["hit"] + self.occupancyGrid[key]["miss"])
+            if self.occupancyGrid[key]["hit"] + self.occupancyGrid[key]["miss"]:
+                self.map[key] = float(self.occupancyGrid[key]["hit"]) / (self.occupancyGrid[key]["hit"] + self.occupancyGrid[key]["miss"])
+            else:
+                self.map[key] = 0
 
     def thresh(self, alpha):
         for key in self.map.keys():
@@ -154,12 +157,11 @@ class MappingAgent(Car):
     def drawMap(self, world):
         for cell in self.map.keys():
             if self.map[cell] == 1.0:
-                pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 1, 1))
+                pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
 
     def extractBorders(self):
         points = list()
         for cell in self.map.keys():
-            if self.map[cell] == 1.0:
                 points.append(cell)
 
     def generateRandomMeans(self, width, height, k = 10):
@@ -215,7 +217,6 @@ class MappingAgent(Car):
                     minDist = d
         return self.iterateMeans(clusters, means)
 
-
     def corners(self, obstacles):
         for obstacle in obstacles:
             obstacle = sorted(obstacle, key=lambda x:x[0])
@@ -225,6 +226,9 @@ class MappingAgent(Car):
     def update(self, world):
         Car.update(self, world)
         self.observe(world)
+        self.buildMap()
+        self.thresh(0.1)
+        self.drawMap(world)
 
 
 
