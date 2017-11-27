@@ -2,6 +2,7 @@ import pygame
 import math
 from obstacle import Obstacle
 from car import *
+import time
 
 class World:
 
@@ -28,10 +29,12 @@ class World:
         self.car = MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
+        self.frames = 0
 
     def run(self):
         ################## DON'T FORGET TO CITE THIS CODE #########################
         while self.isRunning:
+            self.frames += 1
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.isRunning = False

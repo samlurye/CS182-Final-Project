@@ -89,7 +89,6 @@ class MappingAgent(Car):
         self.occupancyGrid = self.blankOccupancyGrid()
         self.obstacleCorners = []
 
-
     # generates n uniformly distributed particles
     def generateNParticles(self, n, world):
         particles = []
@@ -224,11 +223,13 @@ class MappingAgent(Car):
             self.obstacleCorners.append([obstacle[0], obstacle[len(obstacle) - 1]])
 
     def update(self, world):
+        print world.frames
         Car.update(self, world)
         self.observe(world)
-        self.buildMap()
-        self.thresh(0.1)
-        self.drawMap(world)
+        if world.frames % 300 >= 0 and world.frames % 300 <= 15:
+            self.buildMap()
+            self.thresh(0.1)
+            self.drawMap(world)
 
 
 
