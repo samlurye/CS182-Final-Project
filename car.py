@@ -105,7 +105,6 @@ class MappingAgent(Car):
 
     def observe(self, world):
         readings = self.sensorModel.getReadings(world)
-        sensors = self.sensorModel.getSensors()
         for read in readings:
             if read[1] != None:
                 pos = [self.xy[0], self.xy[1]]
