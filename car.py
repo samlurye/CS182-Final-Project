@@ -109,7 +109,8 @@ class MappingAgent(Car):
             if read[1] != None:
                 pos = [self.xy[0], self.xy[1]]
                 end = (round(read[1][0]), round(read[1][1]))
-                self.occupancyGrid[end]["hit"] += 1
+                if end[0] >= 0 and end[0] <= self.displayWidth and end[1] >= 0 and end[1] <= self.displayHeight:
+                    self.occupancyGrid[end]["hit"] += 1
                 slope = 0
                 if pos[0] - end[0] == 0:
                     if pos[1] < end[1]:
@@ -118,8 +119,9 @@ class MappingAgent(Car):
                         slope = -1
                 else:
                     slope = float(pos[1] - end[1]) / (pos[0] - end[0])
-                while abs(round(pos[0]) - end[0]) > 1 and abs(round(pos[1]) - end[1]) > 1:
-                    self.occupancyGrid[(round(pos[0]), round(pos[1]))]["miss"] += 1
+                while abs(pos[0] - end[0]) > 1 and abs(pos[1] - end[1]) > 1:
+                    if pos[0] >= 0 and pos[0] <= self.displayWidth and pos[1] >= 0 and pos[1] <= self.displayHeight:
+                        self.occupancyGrid[(round(pos[0]), round(pos[1]))]["miss"] += 1
                     if end[0] < pos[0]:
                         pos[0] -= 1
                         pos[1] += slope * -1
@@ -131,8 +133,8 @@ class MappingAgent(Car):
 
     def blankOccupancyGrid(self):
         occupancyGrid = dict()
-        for i in range(-50, self.displayWidth + 51):
-            for j in range(-50, self.displayHeight + 51):
+        for i in range(self.displayWidth + 1):
+            for j in range(self.displayHeight + 1):
                 occupancyGrid[(i, j)] = dict(hit = 0, miss = 0)
         return occupancyGrid
 
