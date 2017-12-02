@@ -24,7 +24,7 @@ class Sensor:
 
     # update sensor graphics
     def update(self, world):
-        self.start = world.car.center()
+        self.start = world.cars[0].center()
         self.end = self.getEnd(self.start, self.getHeading(world))
         pygame.draw.line(world.screen, (0, 255, 0), self.start, self.end, 2)
         self.beam = (self.start[0], self.start[1], self.end[0], self.end[1])
@@ -62,7 +62,7 @@ class Sensor:
 
     # get direction of sensor beam
     def getHeading(self, world):
-        carHeading = (math.cos(math.radians(world.car.orientation)), math.sin(math.radians(world.car.orientation)))
+        carHeading = (math.cos(math.radians(world.cars[0].orientation)), math.sin(math.radians(world.cars[0].orientation)))
         return rotateVector(carHeading, self.direction)
 
     # get endpoint of sensor beam
