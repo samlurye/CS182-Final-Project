@@ -21,6 +21,15 @@ class KDTree:
 		if rightPoints != []:
 			self.right = KDTree(self.dim, rightPoints, (axis + 1) % self.dim)
 
+	def list(self):
+		points = []
+		points.append(self.value)
+		if self.right:
+			points += self.right.list()
+		if self.left:
+			points = self.left.list() + points
+		return points
+
 	def insert(self, point):
 		assert len(point) == self.dim
 		if point == self.value:

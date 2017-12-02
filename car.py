@@ -1,6 +1,7 @@
 import pygame
 import math
 from sensor import SensorModel, Sensor
+from PRM import *
 import random
 import time
 import numpy
@@ -18,7 +19,7 @@ def rot_center(image, angle):
 
 class Car:
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, world):
         self.orig_image = pygame.transform.scale(pygame.image.load('car.png'), (20, 20)) # original, unrotated car image
         self.image = self.orig_image.copy()     # image that actually gets rendered for the user
         self.size = self.image.get_size()       # dimensions of the user 
@@ -45,7 +46,7 @@ class Car:
     def update(self, world):
         if world.rotInput:
             # rotate the car
-            self.orientation += world.rotInput * self.angvel
+            self.orientation = (self.orientation + world.rotInput * self.angvel) % 360
             self.image = rot_center(self.orig_image, self.orientation + world.rotInput * self.angvel - 90)
         # check for collisions and update velocity appropriately
         if not self.checkCollisions(world):
@@ -231,8 +232,76 @@ class MappingAgent(Car):
             self.thresh(0.1)
             self.drawMap(world)
 
+class NavigationAgent(Car):
+
+    def __init__(self, x, y, world):
+        Car.__init__(self, x, y, world)
+        self.prm = None
+        self.currentPath = []
+        self.endPoints = None
+        self.i = 0
+        self.pathLength = 0
+        self.mode = 0
+
+    def update(self, world):
+        if self.i < len(self.currentPath) - 1:
+            self.xy = self.currentPath[self.i + 1]
+            self.pathLength += dist(self.xy, self.currentPath[self.i])
+            self.i += 1
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
+
+    def setPath(self, start, end, world):
+        self.endPoints = start, end
+        self.currentPath = self.prm.getPath(self.endPoints[0], self.endPoints[1], world)
+        self.i = 0
+        self.pathLength = 0
 
 
+class DataCollectionAgent(Car):
+
+    def __init__(self, x, y, world):
+        Car.__init__(self, x, y, world)
+        self.prm = None
+        self.currentPath = []
+        self.endPoints = None
+        self.i = 0
+        self.pathLength = 0
+        self.mode = 0
+
+    def update(self, world):
+        if self.i < len(self.currentPath) - 1:
+            self.xy = self.currentPath[self.i + 1]
+            self.pathLength += dist(self.xy, self.currentPath[self.i])
+            self.i += 1
+        else:
+            if len(self.currentPath) > 0:
+                if self.mode == 1:
+                    print "PRM L " + str(self.pathLength) + "\n"
+                else:
+                    print "RRT L " + str(self.pathLength) + "\n"
+            if self.mode == 0:
+                self.endPoints = (self.prm.sample(world), self.prm.sample(world))
+                print "PRM P " + str(self.endPoints[0][0]) + " " + str(self.endPoints[0][1]) + " " + \
+                        str(self.endPoints[1][0]) + " " + str(self.endPoints[1][1])
+                start = time.clock()
+                self.currentPath = self.prm.getPath(self.endPoints[0], self.endPoints[1], world)
+                end = time.clock()
+                print "PRM T " + str(end - start)
+                self.mode = 1
+            elif self.mode == 1:
+                print "RRT P " + str(self.endPoints[0][0]) + " " + str(self.endPoints[0][1]) + " " + \
+                        str(self.endPoints[1][0]) + " " + str(self.endPoints[1][1])
+                start = time.clock()
+                self.currentPath = RRT(self.endPoints[0], self.endPoints[1]).run(world)
+                end = time.clock() 
+                print "RRT T " + str(end - start)
+                self.mode = 0
+            self.i = 0
+            self.pathLength = 0
+        for p1 in self.prm.connections:
+            for p2 in self.prm.connections[p1]:
+                pygame.draw.line(world.screen, (0, 0, 0), p1, p2)
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
 
 
 

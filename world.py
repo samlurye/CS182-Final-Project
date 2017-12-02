@@ -3,6 +3,7 @@ import math
 from obstacle import Obstacle
 from car import *
 import time
+from PRM import *
 
 class World:
 
@@ -26,7 +27,8 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.car = MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)
+        self.car = NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)
+        self.car.prm = PRM(self)
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
         self.frames = 0
@@ -59,6 +61,8 @@ class World:
             # pygame is weird and leaves old images on the screen, so fill the background white each frame
             self.screen.fill((255, 255, 255))
         ###########################################################################
+            if self.car.i >= len(self.car.currentPath) - 1:
+                self.car.setPath(self.car.prm.sample(self), self.car.prm.sample(self), self)
             # move the car and check for collisions
             self.car.update(self)
             # redraw all the obstacles
