@@ -11,8 +11,8 @@ class Customers:
     	# self.numWaitingCustomers = 0
         # self.numDrivingCustomers = 0
         self.numServedCustomers = 0
-    	self.waitingCustomers = []
-    	self.drivingCustomers = []
+        self.waitingCustomers = []
+        self.drivingCustomers = []
         self.font = pygame.font.SysFont('Arial', 14)
 
 
@@ -84,5 +84,5 @@ class Customers:
             endCoords = (int(round(customer["endCoords"][0])), int(round(customer["endCoords"][1])))
             pygame.draw.circle(world.screen, (255, 0, 0), startCoords, 6)
             pygame.draw.circle(world.screen, (0, 255, 0), endCoords, 6)
-            world.screen.blit(self.font.render(str(customer["numCustomer"]), True, (0,0,0)), startCoords)
-            world.screen.blit(self.font.render(str(customer["numCustomer"]), True, (0,0,0)), endCoords)
+            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]), True, (0,0,0)), startCoords)
+            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]), True, (0,0,0)), endCoords)

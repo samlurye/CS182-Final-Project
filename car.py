@@ -19,7 +19,7 @@ def rot_center(image, angle):
 
 class Car:
 
-    def __init__(self, x, y, world):
+    def __init__(self, x, y, world, IDnum):
         self.orig_image = pygame.transform.scale(pygame.image.load('car.png'), (20, 20)) # original, unrotated car image
         self.image = self.orig_image.copy()     # image that actually gets rendered for the user
         self.size = self.image.get_size()       # dimensions of the user 
@@ -33,6 +33,9 @@ class Car:
         self.drag = .6                          # drag force exerted on car
         self.dt = 0.1                           # time step
         self.sensorModel = SensorModel()
+        # new stuff to keep track of car ID
+        self.IDnumber = IDnum
+        self.font = pygame.font.SysFont('Arial', 20)
         
 
     def getVelocity(self, dirInput):
@@ -55,6 +58,7 @@ class Car:
         self.xy = (self.xy[0] + self.velocity[0], self.xy[1] + self.velocity[1])
         # draw car to screen
         world.screen.blit(self.image, self.xy)
+        
 
     def checkCollisions(self, world):
         collided = False
@@ -234,8 +238,8 @@ class MappingAgent(Car):
 
 class NavigationAgent(Car):
 
-    def __init__(self, x, y, world):
-        Car.__init__(self, x, y, world)
+    def __init__(self, x, y, world, IDnum):
+        Car.__init__(self, x, y, world, IDnum)
         self.prm = None
         self.currentPath = []
         self.endPoints = None
@@ -249,6 +253,7 @@ class NavigationAgent(Car):
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
         pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
+        world.screen.blit(self.font.render("Car" + str(self.IDnumber + 1), True, (20,0,0)), (int(round(self.xy[0])), int(round(self.xy[1]))))
 
     def setPath(self, start, end, world):
         self.endPoints = start, end

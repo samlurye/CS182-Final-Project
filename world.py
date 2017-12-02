@@ -28,7 +28,8 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self) for _ in range(5)]
+        self.numCars = 5
+        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
 
         # the self refers to the world
         self.customers = Customers(self)
