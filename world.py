@@ -63,6 +63,9 @@ class World:
                         self.customers.newCustomer(self)
                         for customer in self.customers.waitingCustomers:
                             print customer
+                    # clear all waiting customers
+                    if event.key == pygame.K_c:
+                        self.customers.waitingCustomers = []
 
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
