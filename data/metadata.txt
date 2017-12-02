@@ -1,0 +1,12 @@
+data0: 2500 samples in PRM, 5 connections/sample
+data1: 5000 samples in PRM, 5 connections/sample
+data2: 10000 samples in PRM, 5 connections/sample
+data3: 20000 samples in PRM, 5 connections/sample
+data4: 2500 samples in PRM, 4 connections/sample
+data5: 5000 samples in PRM, 4 connections/sample
+data6: 10000 samples in PRM, 4 connections/sample
+data7: 20000 samples in PRM, 4 connections/sample
+data8: 2500 samples in PRM, 6 connections/sample
+data9: 5000 samples in PRM, 6 connections/sample
+data10 10000 samples in PRM, 6 connections/sample
+data11 20000 samples in PRM, 6 connections/sample
