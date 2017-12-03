@@ -15,6 +15,12 @@ class Customers:
         self.drivingCustomers = []
         self.font = pygame.font.SysFont('Arial', 14)
 
+    
+    # takes in a customer ID number and updates the lists when since the ride is over
+    def finishedRide(self, world, customerNumber):
+        self.drivingCustomers = [x for x in self.drivingCustomers if x["numCustomer"] != customerNumber]
+        self.numServedCustomers += 1
+
     # moves a customer from the waiting to the driving list
     def pickupCustomer(self, world, customerNumber):
 
@@ -22,11 +28,6 @@ class Customers:
         customerToPickup = [x for x in self.waitingCustomers if x[numCustomer] == customerNumber][0]
         self.drivingCustomers.append(customerToPickup)
         self.waitingCustomers.remove(customerToPickup)
-
-    # takes in a customer ID number and updates the lists when since the ride is over
- 	def finishedRide(self, world, customerNumber):
- 		self.drivingCustomers = [x for x in self.drivingCustomers if x[numCustomer] != customerNumber]
- 		self.numServedCustomers += 1
 
     # adds a new, numbered customer to waitingCustomers with a start/end destination
     def newCustomer(self, world):
