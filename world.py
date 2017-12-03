@@ -29,8 +29,8 @@ class World:
             Obstacle(300, 0, 300, 75)
         ]
         #self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)]
-        self.numCars = 5
-        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
+        self.numCars = 1
+        self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
 
         # the self refers to the world
         self.customers = Customers(self)
@@ -61,6 +61,10 @@ class World:
                     # press 'p' for new passenger
                     if event.key == pygame.K_p:
                         self.customers.newCustomer(self)
+                        self.customers.newCustomer(self)
+                        self.customers.newCustomer(self)
+                        self.customers.newCustomer(self)
+                        self.customers.newCustomer(self)
                         for customer in self.customers.waitingCustomers:
                             print customer
                     # clear all waiting customers
@@ -83,20 +87,25 @@ class World:
                 if car.i >= len(car.currentPath) - 1:
                     ######## RANDOM PICKUP AGENT ########
                     if len(self.customers.waitingCustomers) != 0:
-                        nextCustomer = self.customers.waitingCustomers.pop()
-                        print(nextCustomer)
-                        print(nextCustomer["startCoords"])
+                        nextCustomer = self.customers.waitingCustomers.pop(0)
+                        # print(nextCustomer)
+                        # print(nextCustomer["startCoords"])
                         # Send the car to the passenger pickup point
-                        if car.endPoints == None:
-                            car.endPoints = (car.prm.sample(self), car.prm.sample(self))
-                        car.setPath(car.endPoints[1], nextCustomer["startCoords"], self)
+                        # if car.endPoints == None:
+                        #     car.endPoints = (car.prm.sample(self), car.prm.sample(self))
+
+
+                        print("end points")
+                        print(car.endPoints)
+                        car.setPath(car.xy, nextCustomer["startCoords"], nextCustomer["endCoords"], self)
                         self.customers.drivingCustomers.append(nextCustomer)
-                        car.setPath(car.endPoints[1], nextCustomer["endCoords"], self)
+
+                        
+                        # car.endPoints = (car.endPoints[1], nextCustomer["endCoords"])
                         # self.customers.finishedRide(self, nextCustomer["numCustomer"])
-                        self.customers.finishedRide(self, nextCustomer["numCustomer"])
+                        
 
-
-                    # old code that will send the cars to random spots
+                    # old code that would send the cars to random spots
                     # if car.endPoints:
                     #     car.setPath(car.endPoints[1], car.prm.sample(self), self)
                     # else:
@@ -109,7 +118,7 @@ class World:
             # update the screen
             pygame.display.update()
             # try to run at 60 frames per second (or something, not totally sure)
-            self.clock.tick(60)
+            self.clock.tick(10)
         pygame.quit()
         quit()
 

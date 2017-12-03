@@ -262,6 +262,37 @@ class NavigationAgent(Car):
         self.pathLength = 0
 
 
+
+class CustomerAgent(Car):
+
+    def __init__(self, x, y, world, IDnum):
+        Car.__init__(self, x, y, world, IDnum)
+        self.prm = None
+        self.currentPath = []
+        self.endPoints = None
+        self.i = 0
+        self.pathLength = 0
+        self.mode = 0
+
+    def update(self, world):
+        if self.i < len(self.currentPath) - 1:
+            self.xy = self.currentPath[self.i + 1]
+            self.pathLength += dist(self.xy, self.currentPath[self.i])
+            self.i += 1
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
+        world.screen.blit(self.font.render("Car" + str(self.IDnumber + 1), True, (20,0,0)), (int(round(self.xy[0])), int(round(self.xy[1]))))
+
+    # takes in a MIDDLE
+    def setPath(self, start, middle, end, world):
+        self.endPoints1 = start, middle
+        self.endPoints2 = middle, end
+        self.currentPath = self.prm.getPath(self.endPoints1[0], self.endPoints1[1], world)
+        self.currentPath = self.currentPath + self.prm.getPath(self.endPoints2[0], self.endPoints2[1], world)
+        self.i = 0
+        self.pathLength = 0
+
+
+
 class DataCollectionAgent(Car):
 
     def __init__(self, x, y, world):
