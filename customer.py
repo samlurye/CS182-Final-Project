@@ -50,4 +50,4 @@ class Customers:
             pygame.draw.circle(world.screen, (0, 100, 110), startCoords, 6)
             pygame.draw.circle(world.screen, (0, 100, 110), endCoords, 6)
             world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " pickup", True, (0,0,0)), startCoords)
-            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + "being dropped off", True, (0,0,0)), endCoords)
+            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " being dropped off", True, (0,0,0)), endCoords)
