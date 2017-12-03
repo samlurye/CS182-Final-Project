@@ -45,6 +45,9 @@ class Customers:
             world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " pickup", True, (0,0,0)), startCoords)
             world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " dropoff", True, (0,0,0)), endCoords)
         for customer in self.drivingCustomers:
+            startCoords = (int(round(customer["startCoords"][0])), int(round(customer["startCoords"][1])))
             endCoords = (int(round(customer["endCoords"][0])), int(round(customer["endCoords"][1])))
-            pygame.draw.circle(world.screen, (0, 0, 255), endCoords, 6)
-            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]), True, (0,0,0)), endCoords)
+            pygame.draw.circle(world.screen, (0, 100, 110), startCoords, 6)
+            pygame.draw.circle(world.screen, (0, 100, 110), endCoords, 6)
+            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " pickup", True, (0,0,0)), startCoords)
+            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + "being dropped off", True, (0,0,0)), endCoords)

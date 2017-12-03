@@ -29,7 +29,7 @@ class World:
             Obstacle(300, 0, 300, 75)
         ]
         #self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)]
-        self.numCars = 1
+        self.numCars = 10
         self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
 
         # the self refers to the world
