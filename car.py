@@ -84,8 +84,8 @@ class MappingAgent(Car):
 
     """Human-controlled car that maps using sensor data"""
 
-    def __init__(self, x, y, world):
-        Car.__init__(self, x, y)
+    def __init__(self, x, y, world, idnum):
+        Car.__init__(self, x, y, world, idnum)
         self.numParticles = 5000
         self.particles = self.generateNParticles(self.numParticles, world)
         self.displayWidth = world.displayWidth
@@ -93,6 +93,12 @@ class MappingAgent(Car):
         self.map = self.blankMap()
         self.occupancyGrid = self.blankOccupancyGrid()
         self.obstacleCorners = []
+        self.prm = None
+        self.currentPath = []
+        self.endPoints = None
+        self.i = 0
+        self.pathLength = 0
+        self.mode = 0
 
     # generates n uniformly distributed particles
     def generateNParticles(self, n, world):
@@ -145,6 +151,7 @@ class MappingAgent(Car):
         return occupancyGrid
 
     def buildMap(self):
+        print "building"
         for key in self.map.keys():
             if self.occupancyGrid[key]["hit"] + self.occupancyGrid[key]["miss"]:
                 self.map[key] = float(self.occupancyGrid[key]["hit"]) / (self.occupancyGrid[key]["hit"] + self.occupancyGrid[key]["miss"])
@@ -152,6 +159,7 @@ class MappingAgent(Car):
                 self.map[key] = 0
 
     def thresh(self, alpha):
+        print "thresh"
         for key in self.map.keys():
             if self.map[key] < alpha:
                 self.map[key] = 0.0
@@ -162,11 +170,13 @@ class MappingAgent(Car):
         for cell in self.map.keys():
             if self.map[cell] == 1.0:
                 pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
+        print "exit"
 
     def extractBorders(self):
         points = list()
         for cell in self.map.keys():
                 points.append(cell)
+        return points
 
     def generateRandomMeans(self, width, height, k = 10):
         means = list()
@@ -226,15 +236,26 @@ class MappingAgent(Car):
             obstacle = sorted(obstacle, key=lambda x:x[0])
             obstacle = sorted(obstacle, key=lambda x:x[1])
             self.obstacleCorners.append([obstacle[0], obstacle[len(obstacle) - 1]])
+        print corners
+
+    def getObstacles(self, world):
+        borders = self.extractBorders()
+        means = self.generateRandomMeans(self.displayWidth, self.displayHeight)
 
     def update(self, world):
-        print world.frames
         Car.update(self, world)
         self.observe(world)
-        if world.frames % 300 >= 0 and world.frames % 300 <= 15:
-            self.buildMap()
-            self.thresh(0.1)
-            self.drawMap(world)
+        if self.i < len(self.currentPath) - 1:
+            self.xy = self.currentPath[self.i + 1]
+            self.pathLength += dist(self.xy, self.currentPath[self.i])
+            self.i += 1
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
+
+    def setPath(self, start, end, world):
+        self.endPoints = start, end
+        self.currentPath = self.prm.getPath(self.endPoints[0], self.endPoints[1], world)
+        self.i = 0
+        self.pathLength = 0
 
 class NavigationAgent(Car):
 

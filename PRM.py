@@ -156,6 +156,7 @@ class PRM:
     def __init__(self, world):
         self.points = KDTree(2, [world.kdtreeStart])
         self.size = 2500
+        self.carSize = world.carSize
         self.getPoints(world)
         self.connections = self.getConnections(world)
         numConns = 0
@@ -166,8 +167,8 @@ class PRM:
     def sample(self, world):
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
         for obstacle in world.obstacles:
-            if obstacle.colliderect((point[0] - world.cars[0].size[0] / 2.,
-                point[1] - world.cars[0].size[1] / 2., world.cars[0].size[0], world.cars[0].size[1])):
+            if obstacle.colliderect((point[0] - self.carSize[0] / 2.,
+                point[1] - self.carSize[1] / 2., self.carSize[0], self.carSize[1])):
                 return self.sample(world)
         return point
 
