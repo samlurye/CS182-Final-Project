@@ -29,6 +29,7 @@ class Obstacle(pygame.Rect):
     def collideline(self, line):
         start = line[0], line[1]
         end = line[2], line[3]
+        length = dist(start, end)
         minDist = float("inf")
         nearestPoint = None
         for i in range(4):
@@ -36,7 +37,7 @@ class Obstacle(pygame.Rect):
             if point and self.collidepoint(point):
                 if (point[0] - start[0]) * (end[0] - start[0]) + (point[1] - start[1]) * (end[1] - start[1]) >= 0:
                     distToPoint = dist(point, start)
-                    if distToPoint < minDist:
+                    if distToPoint < minDist and distToPoint <= length:
                         minDist = distToPoint
                         nearestPoint = point
         return nearestPoint

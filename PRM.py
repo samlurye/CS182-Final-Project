@@ -157,7 +157,11 @@ class PRM:
         self.points = KDTree(2, [world.kdtreeStart])
         self.size = 2500
         self.getPoints(world)
-        self.connections = self.getConnections()
+        self.connections = self.getConnections(world)
+        numConns = 0
+        for p in self.connections:
+            numConns += len(self.connections[p])
+        print numConns
 
     def sample(self, world):
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
@@ -186,27 +190,40 @@ class PRM:
 
     def getPath(self, p1, p2, world):
         if not self.points.contains(p1):
-            self.insertConnection(p1)
+            self.insertConnection(p1, world)
         if not self.points.contains(p2):
-            self.insertConnection(p2)
+            self.insertConnection(p2, world)
         path = AStarSearch(self.connections, p1, p2, 5, "PRM")
         while not path:
             path = RRT(p1, p2).run(world)
         return path
 
-    def insertConnection(self, point):
+    def insertConnection(self, point, world):
         nns = self.points.kNearestNeighbors(point, 6, [])
-        self.connections[point] = [p[0] for p in nns if p[0] != point]
-        self.points.insert(point)
+        self.connections[point] = []
         for p in nns:
-            self.connections[p[0]].append(point)
+            collided = False
+            for obstacle in world.obstacles:
+                if obstacle.collideline((point[0], point[1], p[0][0], p[0][1])):
+                    collided = True
+            if not collided:
+                self.connections[point].append(p[0])
+                self.connections[p[0]].append(point)
+        self.points.insert(point)
 
-    def getConnections(self):
+    def getConnections(self, world):
         connections = dict()
         pointsList = self.points.list()
         for point in pointsList:
             nns = self.points.kNearestNeighbors(point, 7, [])
-            connections[point] = [p[0] for p in nns]
+            connections[point] = []
+            for p in nns:
+                collided = False
+                for obstacle in world.obstacles:
+                    if obstacle.collideline((point[0], point[1], p[0][0], p[0][1])):
+                        collided = True
+                if not collided:
+                    connections[point].append(p[0])
             connections[point].remove(point)
         return connections
 

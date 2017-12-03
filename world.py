@@ -27,7 +27,8 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self) for _ in range(5)]
+        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self) for _ in range(1)]
+        #self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)]
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
         for car in self.cars:
@@ -66,7 +67,10 @@ class World:
         ###########################################################################
             for car in self.cars:
                 if car.i >= len(car.currentPath) - 1:
-                    car.setPath(car.prm.sample(self), car.prm.sample(self), self)
+                    if car.endPoints:
+                        car.setPath(car.endPoints[1], car.prm.sample(self), self)
+                    else:
+                        car.setPath(car.prm.sample(self), car.prm.sample(self), self)
                 car.update(self)
             # redraw all the obstacles
             for obstacle in self.obstacles:
