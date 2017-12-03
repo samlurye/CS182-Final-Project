@@ -4,6 +4,7 @@ from obstacle import Obstacle
 from car import *
 import time
 from PRM import *
+from customer import *
 
 class World:
 
@@ -27,8 +28,12 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self) for _ in range(1)]
         #self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)]
+        self.numCars = 5
+        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
+
+        # the self refers to the world
+        self.customers = Customers(self)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
         for car in self.cars:
@@ -53,6 +58,15 @@ class World:
                         self.dirInput = 1
                     elif event.key == pygame.K_DOWN:
                         self.dirInput = -1
+                    # press 'p' for new passenger
+                    if event.key == pygame.K_p:
+                        self.customers.newCustomer(self)
+                        for customer in self.customers.waitingCustomers:
+                            print customer
+                    # clear all waiting customers
+                    if event.key == pygame.K_c:
+                        self.customers.waitingCustomers = []
+
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
                         self.rotInput = 0
@@ -75,6 +89,7 @@ class World:
             # redraw all the obstacles
             for obstacle in self.obstacles:
                 obstacle.update(self)
+            self.customers.update(self)
             # update the screen
             pygame.display.update()
             # try to run at 60 frames per second (or something, not totally sure)

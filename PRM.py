@@ -16,7 +16,7 @@ def AStarSearch(edges, start, goal, eps, mode):
         current = currentInfo["path"][-1]
         if dist(current, goal) <= eps:
             currentInfo["path"][-1] = goal
-            print mode + " N " + str(nodesExpanded)
+            # print mode + " N " + str(nodesExpanded)
             return currentInfo["path"]
         if current not in visited:
             nodesExpanded += 1
