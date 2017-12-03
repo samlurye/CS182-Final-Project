@@ -100,10 +100,7 @@ class World:
                         car.setPath(car.xy, nextCustomer["startCoords"], nextCustomer["endCoords"], self)
                         self.customers.drivingCustomers.append(nextCustomer)
                     
-                        
-                        
-
-                    # old code that would send the cars to random spots
+                    ######## old code that would send the cars to random spots ########
                     # if car.endPoints:
                     #     car.setPath(car.endPoints[1], car.prm.sample(self), self)
                     # else:
