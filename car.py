@@ -243,7 +243,8 @@ class MappingAgent(Car):
 
     def getObstacles(self, world):
         borders = self.extractBorders()
-        means = self.generateRandomMeans(self.displayWidth, self.displayHeight)
+        means = self.kmeans(borders, self.displayWidth, self.displayHeight)
+        return self.corners(means)
 
     def update(self, world):
         pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
