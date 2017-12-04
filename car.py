@@ -167,9 +167,14 @@ class MappingAgent(Car):
                 self.map[key] = 1.0
 
     def drawMap(self, world):
-        for cell in self.map.keys():
-            if self.map[cell] == 1.0:
-                pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
+        while True:
+            for event in pygame.event.get():
+                pass
+            for cell in self.map.keys():
+                if self.map[cell] == 1.0:
+                    pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
+            pygame.display.update()
+            world.clock.tick(20)
         print "exit"
 
     def extractBorders(self):

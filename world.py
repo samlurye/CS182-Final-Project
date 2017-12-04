@@ -33,16 +33,12 @@ class World:
         ]
         #self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)]
         self.numCars = 1
-<<<<<<< Updated upstream
-        self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
+        #self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
 
         # the self refers to the world
         self.customers = Customers(self)
-=======
         self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
         self.carSize = self.cars[0].size
-        
->>>>>>> Stashed changes
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
         
@@ -56,8 +52,9 @@ class World:
         self.cars[0].prm = self.prm
 
         count = 0
-        while count < 10000:
-            
+        while count < 2000:
+            for event in pygame.event.get():
+                pass
             count += 1
             self.screen.fill((255, 255, 255))
             for car in self.cars:
@@ -70,9 +67,9 @@ class World:
             # redraw all the obstacles
             for obstacle in self.obstacles:
                 obstacle.update(self)
-            
             # update the screen
             pygame.display.update()
+            self.clock.tick(20)
 
         self.cars[0].buildMap()
         self.cars[0].thresh(0.02)
