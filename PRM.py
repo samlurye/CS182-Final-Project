@@ -4,7 +4,7 @@ import time
 import math
 import heapq
 
-def AStarSearch(edges, start, goal, eps, mode):
+def AStarSearch(edges, start, goal, eps):
     queue = []
     visited = set([start])
     nodesExpanded = 0
@@ -16,7 +16,6 @@ def AStarSearch(edges, start, goal, eps, mode):
         current = currentInfo["path"][-1]
         if dist(current, goal) <= eps:
             currentInfo["path"][-1] = goal
-            # print mode + " N " + str(nodesExpanded)
             return currentInfo["path"]
         if current not in visited:
             nodesExpanded += 1
@@ -68,7 +67,7 @@ class RRT:
                     self.connections[s1e] = set([s])
                 if dist(s1e, self.goal) < self.eps:
                     break
-        return AStarSearch(self.connections, self.start, self.goal, self.eps, "RRT")
+        return AStarSearch(self.connections, self.start, self.goal, self.eps)
 
     def sample(self, world):
         if random.random() < 0.05:
@@ -159,10 +158,6 @@ class PRM:
         self.carSize = world.carSize
         self.getPoints(world)
         self.connections = self.getConnections(world)
-        numConns = 0
-        for p in self.connections:
-            numConns += len(self.connections[p])
-        print numConns
 
     def sample(self, world):
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
@@ -194,7 +189,7 @@ class PRM:
             self.insertConnection(p1, world)
         if not self.points.contains(p2):
             self.insertConnection(p2, world)
-        path = AStarSearch(self.connections, p1, p2, 5, "PRM")
+        path = AStarSearch(self.connections, p1, p2, 5)
         while not path:
             path = RRT(p1, p2).run(world)
         return path

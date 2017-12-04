@@ -7,12 +7,16 @@ import time
 from PRM import *
 from customer import *
 
-
 class World:
+
+    PASSENGER_PICKUP = 0
+    RANDOM_NAV = 1
+    MAP_ONLY = 2
+    DATA_COLLECTION = 3
+    MAP_AND_PICKUP = 4
 
     def __init__(self):
         pygame.init()
-
         self.displayWidth = 800
         self.displayHeight = 800
         self.screen = pygame.display.set_mode((self.displayWidth, self.displayHeight))
@@ -31,26 +35,18 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        #self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self)]
-        self.numCars = 1
-        #self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
-
-        # the self refers to the world
-        self.customers = Customers(self)
-        self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
-        self.carSize = self.cars[0].size
+        self.mode = World.MAP_ONLY
+        self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
-        
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
         self.frames = 0
+        self.frameRate = 20
 
     def mapWorld(self):
-
         self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
         self.cars[0].prm = self.prm
-
         count = 0
         while count < 2000:
             for event in pygame.event.get():
@@ -70,34 +66,42 @@ class World:
             # update the screen
             pygame.display.update()
             self.clock.tick(20)
-
         self.cars[0].buildMap()
         self.cars[0].thresh(0.02)
-        self.cars[0].drawMap(self)
         self.obstacleBeliefs = self.cars[0].getObstacles(self)
+        self.cars[0].drawMap(self)
         pygame.display.update()
 
-    def passengerPickup(self):
+    def initPassengerPickup(self):
+        self.customers = Customers(self)
         self.numCars = 5
-        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
+        self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
         for car in self.cars:
             car.prm = self.prm
 
+    def initDataCollection(self):
+        self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
+        self.numCars = 1
+        self.cars[0].prm = self.prm
+
+    def initRandom(self):
+        self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
+        self.numCars = 1
+        self.cars[0].prm = self.prm
 
     def run(self):
         ################## DON'T FORGET TO CITE THIS CODE #########################
-        while self.isRunning:
-
+        if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP:
             self.mapWorld()
-            break
-
+            if self.mode == World.MAP_ONLY:
+                return
+        if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
+            self.initPassengerPickup()
+        if self.mode == World.DATA_COLLECTION:
+            self.initDataCollection()
+        if self.mode == World.RANDOM_NAV:
+            self.initRandom()
         while self.isRunning:
-            self.cars[0].dirInput = 0
-            self.cars[0].rotInput = 0
-
-        self.passengerPickup()
-        while self.isRunning:
-
             self.frames += 1
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -112,18 +116,15 @@ class World:
                     elif event.key == pygame.K_DOWN:
                         self.dirInput = -1
                     # press 'p' for new passenger
-                    if event.key == pygame.K_p:
+                    if event.key == pygame.K_p and (self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP):
                         self.customers.newCustomer(self)
                         self.customers.newCustomer(self)
                         self.customers.newCustomer(self)
                         self.customers.newCustomer(self)
                         self.customers.newCustomer(self)
-                        for customer in self.customers.waitingCustomers:
-                            print customer
                     # clear all waiting customers
-                    if event.key == pygame.K_c:
+                    if event.key == pygame.K_c and (self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP):
                         self.customers.waitingCustomers = []
-
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
                         self.rotInput = 0
@@ -135,41 +136,39 @@ class World:
                         self.dirInput = 0
             # pygame is weird and leaves old images on the screen, so fill the background white each frame
             self.screen.fill((255, 255, 255))
-            
-
-        # the self refers to the world
-            self.customers = Customers(self)
             for car in self.cars:
-                if car.i >= len(car.currentPath) - 1:
-                    ######## QUEUE PICKUP AGENT (Does Customer 1 then 2...) ########
-                    # if len(self.customers.waitingCustomers) != 0:
-                    #     nextCustomer = self.customers.waitingCustomers.pop(0)
-                    #     car.setPath(car.xy, nextCustomer["startCoords"], nextCustomer["endCoords"], self)
-                    #     self.customers.drivingCustomers.append(nextCustomer)
-                        # self.customers.finishedRide(self, nextCustomer["numCustomer"])
+                if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
+                    if car.i >= len(car.currentPath) - 1:
+                        ######## QUEUE PICKUP AGENT (Does Customer 1 then 2...) ########
+                        # if len(self.customers.waitingCustomers) != 0:
+                        #     nextCustomer = self.customers.waitingCustomers.pop(0)
+                        #     car.setPath(car.xy, nextCustomer["startCoords"], nextCustomer["endCoords"], self)
+                        #     self.customers.drivingCustomers.append(nextCustomer)
+                            # self.customers.finishedRide(self, nextCustomer["numCustomer"])
 
-                    ######## RANDOM PICKUP AGENT (Picks up customers randomly) ########
-                    if len(self.customers.waitingCustomers) != 0:
-                        nextCustomer = self.customers.waitingCustomers.pop(random.randint(0,len(self.customers.waitingCustomers)) - 1)
-                        car.setPath(car.xy, nextCustomer["startCoords"], nextCustomer["endCoords"], self)
-                        self.customers.drivingCustomers.append(nextCustomer)
-                    
-                    ######## old code that would send the cars to random spots ########
-                    # if car.endPoints:
-                    #     car.setPath(car.endPoints[1], car.prm.sample(self), self)
-                    # else:
-                    #     car.setPath(car.prm.sample(self), car.prm.sample(self), self)
+                        ######## RANDOM PICKUP AGENT (Picks up customers randomly) ########
+                        if len(self.customers.waitingCustomers) != 0:
+                            nextCustomer = self.customers.waitingCustomers.pop(random.randint(0,len(self.customers.waitingCustomers)) - 1)
+                            car.setPath(car.xy, nextCustomer["startCoords"], nextCustomer["endCoords"], self)
+                            self.customers.drivingCustomers.append(nextCustomer)
+                elif self.mode == World.RANDOM_NAV:
+                    if car.i >= len(car.currentPath) - 1:
+                        if car.endPoints:
+                            car.setPath(car.endPoints[1], car.prm.sample(self), self)
+                        else:
+                            car.setPath(car.prm.sample(self), car.prm.sample(self), self)
                 car.update(self)
-                # redraw all the obstacles
+            # redraw all the obstacles
             for obstacle in self.obstacles:
                 obstacle.update(self)
+            if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
                 self.customers.update(self)
-                # update the screen
+            # update the screen
             pygame.display.update()
         ###########################################################################
             
             # try to run at 60 frames per second (or something, not totally sure)
-            self.clock.tick(20)
+            self.clock.tick(self.frameRate)
         pygame.quit()
         quit()
 

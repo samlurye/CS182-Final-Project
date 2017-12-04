@@ -24,7 +24,7 @@ class Sensor:
 
     # update sensor graphics
     def update(self, world):
-        self.start = world.cars[0].center()
+        self.start = world.cars[0].xy
         self.end = self.getEnd(self.start, self.getHeading(world))
         pygame.draw.line(world.screen, (0, 255, 0), self.start, self.end, 2)
         self.beam = (self.start[0], self.start[1], self.end[0], self.end[1])

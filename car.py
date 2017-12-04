@@ -78,8 +78,6 @@ class Car:
         for i in dist.keys():
             dist[i] = dist[i] / tot
 
-
-
 class MappingAgent(Car):
 
     """Human-controlled car that maps using sensor data"""
@@ -248,13 +246,12 @@ class MappingAgent(Car):
         means = self.generateRandomMeans(self.displayWidth, self.displayHeight)
 
     def update(self, world):
-        Car.update(self, world)
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
         self.observe(world)
         if self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
-        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
 
     def setPath(self, start, end, world):
         self.endPoints = start, end
@@ -271,7 +268,6 @@ class NavigationAgent(Car):
         self.endPoints = None
         self.i = 0
         self.pathLength = 0
-        self.mode = 0
 
     def update(self, world):
         if self.i < len(self.currentPath) - 1:
@@ -287,26 +283,7 @@ class NavigationAgent(Car):
         self.i = 0
         self.pathLength = 0
 
-
-
-class CustomerAgent(Car):
-
-    def __init__(self, x, y, world, IDnum):
-        Car.__init__(self, x, y, world, IDnum)
-        self.prm = None
-        self.currentPath = []
-        self.endPoints = None
-        self.i = 0
-        self.pathLength = 0
-        self.mode = 0
-
-    def update(self, world):
-        if self.i < len(self.currentPath) - 1:
-            self.xy = self.currentPath[self.i + 1]
-            self.pathLength += dist(self.xy, self.currentPath[self.i])
-            self.i += 1
-        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
-        world.screen.blit(self.font.render("Car" + str(self.IDnumber + 1), True, (20,0,0)), (int(round(self.xy[0])), int(round(self.xy[1]))))
+class CustomerAgent(NavigationAgent):
 
     # takes in a MIDDLE
     def setPath(self, start, middle, end, world):
@@ -317,17 +294,10 @@ class CustomerAgent(Car):
         self.i = 0
         self.pathLength = 0
 
+class DataCollectionAgent(NavigationAgent):
 
-
-class DataCollectionAgent(Car):
-
-    def __init__(self, x, y, world):
-        Car.__init__(self, x, y, world)
-        self.prm = None
-        self.currentPath = []
-        self.endPoints = None
-        self.i = 0
-        self.pathLength = 0
+    def __init__(self, x, y, world, IDNum):
+        NavigationAgent.__init__(self, x, y, world, IDNum)
         self.mode = 0
 
     def update(self, world):
