@@ -240,7 +240,8 @@ class MappingAgent(Car):
 
     def getObstacles(self, world):
         borders = self.extractBorders()
-        means = self.generateRandomMeans(self.displayWidth, self.displayHeight)
+        means = self.kmeans(borders, self.displayWidth, self.displayHeight)
+        return self.corners(means)
 
     def update(self, world):
         Car.update(self, world)
