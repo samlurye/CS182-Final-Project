@@ -166,6 +166,7 @@ class MappingAgent(Car):
                 self.map[key] = 1.0
 
     def drawMap(self, world):
+<<<<<<< Updated upstream
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
@@ -175,6 +176,11 @@ class MappingAgent(Car):
                     pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
             pygame.display.update()
             world.clock.tick(20)
+=======
+        for cell in self.map.keys():
+            if self.map[cell] == 1.0:
+                pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
+>>>>>>> Stashed changes
         print "exit"
 
     def extractBorders(self):
@@ -245,16 +251,27 @@ class MappingAgent(Car):
 
     def getObstacles(self, world):
         borders = self.extractBorders()
+<<<<<<< Updated upstream
         means = self.kMeans(borders, self.displayWidth, self.displayHeight)
         return self.corners(means)
 
     def update(self, world):
         pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
+=======
+        means = self.generateRandomMeans(self.displayWidth, self.displayHeight)
+
+    def update(self, world):
+        Car.update(self, world)
+>>>>>>> Stashed changes
         self.observe(world)
         if self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
+<<<<<<< Updated upstream
+=======
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
+>>>>>>> Stashed changes
 
     def setPath(self, start, end, world):
         self.endPoints = start, end
