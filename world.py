@@ -35,7 +35,7 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.mode = World.MAP_ONLY
+        self.mode = World.MAP_AND_PICKUP
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
@@ -48,7 +48,7 @@ class World:
         self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
         self.cars[0].prm = self.prm
         count = 0
-        while count < 2000:
+        while count < 200:
             for event in pygame.event.get():
                 pass
             count += 1
@@ -68,7 +68,7 @@ class World:
             self.clock.tick(20)
         self.cars[0].buildMap()
         self.cars[0].thresh(0.02)
-        self.obstacleBeliefs = self.cars[0].getObstacles(self)
+        #self.obstacleBeliefs = self.cars[0].getObstacles(self)
         self.cars[0].drawMap(self)
         pygame.display.update()
 

@@ -5,6 +5,7 @@ from PRM import *
 import random
 import time
 import numpy
+import sys
 
 ################## DON'T FORGET TO CITE THIS CODE #########################
 def rot_center(image, angle):
@@ -167,7 +168,8 @@ class MappingAgent(Car):
     def drawMap(self, world):
         while True:
             for event in pygame.event.get():
-                pass
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                    return
             for cell in self.map.keys():
                 if self.map[cell] == 1.0:
                     pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
@@ -201,7 +203,7 @@ class MappingAgent(Car):
 
         appendList = [[] for i in range(len(clusters))]
         for c in range(len(clusters)):
-            for point in cluster[c]:
+            for point in clusters[c]:
                 minIndex = c
                 minDist = dist(point, means[c])
                 for m in range(means):
@@ -243,7 +245,7 @@ class MappingAgent(Car):
 
     def getObstacles(self, world):
         borders = self.extractBorders()
-        means = self.kmeans(borders, self.displayWidth, self.displayHeight)
+        means = self.kMeans(borders, self.displayWidth, self.displayHeight)
         return self.corners(means)
 
     def update(self, world):
