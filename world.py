@@ -35,14 +35,14 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-        self.mode = World.MAP_AND_PICKUP
+        self.mode = World.DATA_COLLECTION
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
         self.frames = 0
-        self.frameRate = 20
+        self.frameRate = 10
 
     def mapWorld(self):
         self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
