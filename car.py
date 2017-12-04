@@ -166,27 +166,21 @@ class MappingAgent(Car):
                 self.map[key] = 1.0
 
     def drawMap(self, world):
-<<<<<<< Updated upstream
-        while True:
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
-                    return
-            for cell in self.map.keys():
-                if self.map[cell] == 1.0:
-                    pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
-            pygame.display.update()
-            world.clock.tick(20)
-=======
+        print "drawing"
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                return
         for cell in self.map.keys():
             if self.map[cell] == 1.0:
                 pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
->>>>>>> Stashed changes
-        print "exit"
+        pygame.display.update()
+        world.clock.tick(20)
 
     def extractBorders(self):
         points = list()
         for cell in self.map.keys():
-                points.append(cell)
+                if(self.map[cell] == 1.0):
+                    points.append(cell)
         return points
 
     def generateRandomMeans(self, width, height, k = 10):
@@ -199,34 +193,40 @@ class MappingAgent(Car):
         return sqrt((x1 - y1) ** 2 + (x2 - y2) ** 2)
 
     def iterateMeans(self, clusters, means):
+        print "iterateMeans"
         for c in range(len(clusters)):
+            print "means"
             cluster = clusters[c]
             if not len(cluster) == 0:
                 l = len(cluster)
-                means[c] = ((sum(point[0] for point in cluster)/l, \
-                             sum(point[1] for point in cluster)/l ))
+                means[c] =  ((sum([point[0] for point in cluster])/l, \
+                              sum([point[1] for point in cluster])/l ))
         change = False
 
         appendList = [[] for i in range(len(clusters))]
         for c in range(len(clusters)):
+           
             for point in clusters[c]:
+
                 minIndex = c
                 minDist = dist(point, means[c])
-                for m in range(means):
+                for m in range(len(means)):
+
                     d = dist(point, means[m])
                     if d < minDist:
                         minIndex = m
                         minDist = d
                 if minIndex != c:
                     change = True
-                    appendList[minIndex] = point
-                    clusters[c].pop(point)
+                    appendList[minIndex].append(point)
+                    clusters[c].remove(point)
+        print change
         if not change:
             return clusters
         else:
             for i in range(len(appendList)):
                 clusters[i].extend(appendList[i])
-            self.iterateMeans(clusters, means)
+            return self.iterateMeans(clusters, means)
 
     def kMeans(self, points, width, height):
         means = self.generateRandomMeans(width, height)
@@ -240,38 +240,39 @@ class MappingAgent(Car):
                 if d < minDist:
                     minIndex = m
                     minDist = d
+            clusters[minIndex].append(point)
         return self.iterateMeans(clusters, means)
 
     def corners(self, obstacles):
         for obstacle in obstacles:
             obstacle = sorted(obstacle, key=lambda x:x[0])
             obstacle = sorted(obstacle, key=lambda x:x[1])
-            self.obstacleCorners.append([obstacle[0], obstacle[len(obstacle) - 1]])
-        print corners
+            if len(obstacle) > 0:
+                self.obstacleCorners.extend([obstacle[0], obstacle[len(obstacle) - 1]])
+        return self.obstacleCorners
 
     def getObstacles(self, world):
         borders = self.extractBorders()
-<<<<<<< Updated upstream
         means = self.kMeans(borders, self.displayWidth, self.displayHeight)
-        return self.corners(means)
+        print len(means)
+        corners = self.corners(means)
 
-    def update(self, world):
-        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
-=======
-        means = self.generateRandomMeans(self.displayWidth, self.displayHeight)
+        for corner in corners:
+            pygame.draw.circle(world.screen, (255,0, 0), (int(corner[0]), int(corner[1])), 10)
+        pygame.display.update()
+        print corners
+        print "end getObstacles"
+        return corners
 
     def update(self, world):
         Car.update(self, world)
->>>>>>> Stashed changes
         self.observe(world)
         if self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
-<<<<<<< Updated upstream
-=======
         pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
->>>>>>> Stashed changes
+
 
     def setPath(self, start, end, world):
         self.endPoints = start, end
