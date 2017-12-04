@@ -17,6 +17,7 @@ class World:
 
     def __init__(self):
         pygame.init()
+
         self.displayWidth = 800
         self.displayHeight = 800
         self.screen = pygame.display.set_mode((self.displayWidth, self.displayHeight))
@@ -35,6 +36,7 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
+        ### please just use this I promise everything you have is going to work ###
         self.mode = World.DATA_COLLECTION
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
@@ -42,35 +44,8 @@ class World:
         self.dirInput = 0   # 1 if up-arrow key, -1 if down-arrow key, 0 if no input
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
         self.frames = 0
-        self.frameRate = 10
-
-    def mapWorld(self):
-        self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
-        self.cars[0].prm = self.prm
-        count = 0
-        while count < 200:
-            for event in pygame.event.get():
-                pass
-            count += 1
-            self.screen.fill((255, 255, 255))
-            for car in self.cars:
-                if car.i >= len(car.currentPath) - 1:
-                    if car.endPoints:
-                        car.setPath(car.endPoints[1], car.prm.sample(self), self)
-                    else:
-                        car.setPath(car.prm.sample(self), car.prm.sample(self), self)
-                car.update(self)
-            # redraw all the obstacles
-            for obstacle in self.obstacles:
-                obstacle.update(self)
-            # update the screen
-            pygame.display.update()
-            self.clock.tick(20)
-        self.cars[0].buildMap()
-        self.cars[0].thresh(0.02)
-        #self.obstacleBeliefs = self.cars[0].getObstacles(self)
-        self.cars[0].drawMap(self)
-        pygame.display.update()
+        self.frameRate = 20
+        ###########################################################################
 
     def initPassengerPickup(self):
         self.customers = Customers(self)
@@ -89,10 +64,47 @@ class World:
         self.numCars = 1
         self.cars[0].prm = self.prm
 
+    def mapWorld(self, maxCount = 10000):
+
+        self.cars = [MappingAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
+        self.cars[0].prm = self.prm
+
+        count = 0
+        while count < maxCount:
+            # if you don't leave this loop here, the car and sensors will never get drawn to the screen
+            for event in pygame.event.get():
+                pass
+            count += 1
+            self.screen.fill((255, 255, 255))
+            for car in self.cars:
+                if car.i >= len(car.currentPath) - 1:
+                    if car.endPoints:
+                        car.setPath(car.endPoints[1], car.prm.sample(self), self)
+                    else:
+                        car.setPath(car.prm.sample(self), car.prm.sample(self), self)
+                car.update(self)
+            # redraw all the obstacles
+            for obstacle in self.obstacles:
+                obstacle.update(self)
+            # update the screen
+            pygame.display.update()
+            # leave this here please
+            self.clock.tick(self.frameRate)
+
+        self.cars[0].buildMap()
+        self.cars[0].thresh(0.02)
+        self.cars[0].drawMap(self)
+        self.obstacleBeliefs = self.cars[0].getObstacles(self)
+        print self.obstacleBeliefs
+        pygame.display.update()
+
     def run(self):
         ################## DON'T FORGET TO CITE THIS CODE #########################
+        # another merge conflict, but please leave this stuff here
+        # if you want to run mapping, just set self.mode to World.MAP_ONLY
+        # please don't replace this with what used to be here
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP:
-            self.mapWorld()
+            self.mapWorld(2000)
             if self.mode == World.MAP_ONLY:
                 return
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
@@ -136,6 +148,7 @@ class World:
                         self.dirInput = 0
             # pygame is weird and leaves old images on the screen, so fill the background white each frame
             self.screen.fill((255, 255, 255))
+
             for car in self.cars:
                 if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
                     if car.i >= len(car.currentPath) - 1:
@@ -158,12 +171,13 @@ class World:
                         else:
                             car.setPath(car.prm.sample(self), car.prm.sample(self), self)
                 car.update(self)
-            # redraw all the obstacles
+                # redraw all the obstacles
             for obstacle in self.obstacles:
                 obstacle.update(self)
+
             if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
                 self.customers.update(self)
-            # update the screen
+
             pygame.display.update()
         ###########################################################################
             
