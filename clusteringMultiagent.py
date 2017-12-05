@@ -9,23 +9,55 @@ import car
 import customer
 import sys
 
-
-class KMeansClusteringAgent:
+class MultiAgent:
 
 	def __init__(self, cars, passengers, world):
-		self.means = dict()
-
-		self.clusters = dict()
 		self.cars = cars
 		self.passengers = passengers
 		self.world = world
+		self.prm = self.world.prm
+
+	def euclid(start, end):
+		return sqrt((start[0] - end[0])**2 + (start[1] - end[1])**2)
+
+	def compPoints(x, y, car):
+		distx = self.euclid(x, car)
+		disty = self.euclid(y, car)
+		if distx < disty:
+			return -1
+		elif distx > disty:
+			return 1
+		else:
+			return 0
+
+	def getPaths(self, travelPoints):
+		plan = dict()
+		for car in self.cars:
+			points = list()
+			for point in travelPoints[car.i]:
+				points.extend(point["startCoords"], point["endCoords"])
+			start = car.xy
+			points = points.sort(lambda x, y: dist(x, y ,start))
+			path = list()
+			path.append(self.prm.getPaths(start, points[0], self.world))
+			for i in range(len(points) - 1):
+				path.append(self.prm.getPaths(points[i], points[i + 1], self.world))
+			plan[car.i] = path
+		return plan
+
+	
+class KMeansClusteringAgent(MultiAgent):
+
+	def __init__(self, cars, passengers, world):
+		MultiAgent.__init__(self, cars, passengers, world)
+		self.means = dict()
+		self.clusters = dict()
+		
 
 	def getStartingMeans(self):
 		for car in self.cars:
 			self.means[car.i] = car.xy
 
-	def euclid(start, end):
-		return sqrt((start[0] - end[0])**2 + (start[1] - end[1])**2)
 
 	def dist(mean, passenger):
 		return self.euclid(mean, passenger["startCoords"]) + self.euclid(mean, passenger["endCoords"])
@@ -55,7 +87,7 @@ class KMeansClusteringAgent:
 		swap = False
 		updates = dict()
 		for cluster in self.clusters.keys():
-			for passinger in self.clusters[cluster]:
+			for passenger in self.clusters[cluster]:
 				minDist = sys.maxint
 				minMean = cluster
 				for mean in self.means.keys():
@@ -71,6 +103,7 @@ class KMeansClusteringAgent:
 			self.clusters[el].extend(updates[el])
 		return swap
 
+
 	def KMeans(self):
 		self.getStartingMeans()
 		self.assignMeans()
@@ -81,6 +114,9 @@ class KMeansClusteringAgent:
 			if not self.updateClusters():
 				break
 		return self.clusters
+
+	def getPaths(self):
+		return Multiagent.getPaths(self.clusters)
 
 class Tree:
 	def __init__(self, data = None, left = None, right = None):
@@ -97,6 +133,7 @@ class AgglomerativeAgent:
 		self.passengers = passengers
 		self.world = world
 		self.tree = Tree()
+		self.paths = dict()
 
 	def mean(self, cluster):
 		x = 0
@@ -142,13 +179,33 @@ class AgglomerativeAgent:
 		return clustered
 
 
+	def getClusters(tree, num):
+		if(len(tree) > num):
+			return tree
+		
+		newtree = list()
+		for t in tree:
+			newtree.append(t.left)
+			newtree.append(t.right)
+		return getClusters(newtree, num)
+
 	def agglomerative(self, roots):
 		treeLst = list()
 		for root in roots:
 			treeList.append(Tree(root))
 
 		while(len(TreeList) > 1):
-			treeLIst = self.cluster(treeList)
+			treeList = self.cluster(treeList)
 
 		return treeList
+
+
+	def getPaths(self):
+		trees = self.getClusters(self.tree, len(self.cars))
+		clusters = dict()
+		for i in len(trees):
+			clusters[i] = tree[i].data
+		return MultiAgent.getPaths(clusters)
+
+
 
