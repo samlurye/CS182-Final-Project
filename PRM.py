@@ -200,7 +200,7 @@ class PRM:
         for p in nns:
             collided = False
             for obstacle in world.obstacles:
-                if obstacle.collideline((point[0], point[1], p[0][0], p[0][1])):
+                if obstacle.collideline((point[0], point[1], p[0][0], p[0][1]), 10):
                     collided = True
             if not collided:
                 self.connections[point].append(p[0])
@@ -216,7 +216,7 @@ class PRM:
             for p in nns:
                 collided = False
                 for obstacle in world.obstacles:
-                    if obstacle.collideline((point[0], point[1], p[0][0], p[0][1])):
+                    if obstacle.collideline((point[0], point[1], p[0][0], p[0][1]), 10):
                         collided = True
                 if not collided:
                     connections[point].append(p[0])

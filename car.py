@@ -167,14 +167,18 @@ class MappingAgent(Car):
 
     def drawMap(self, world):
         print "drawing"
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
-                return
-        for cell in self.map.keys():
-            if self.map[cell] == 1.0:
-                pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
-        pygame.display.update()
-        world.clock.tick(20)
+        # Allie this is going to give you a merge conflict but please leave it in the loop
+        # hit 'M' to exit the loop
+        # otherwise the belief distribution will show up for one frame and immediately get erased
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
+                    return
+            for cell in self.map.keys():
+                if self.map[cell] == 1.0:
+                    pygame.draw.rect(world.screen, (0,0,0), (cell[0], cell[1], 2, 2))
+            pygame.display.update()
+            world.clock.tick(20)
 
     def extractBorders(self):
         points = list()
@@ -265,13 +269,14 @@ class MappingAgent(Car):
         return corners
 
     def update(self, world):
-        Car.update(self, world)
+        # this is going to give you another merge conflict but please leave it as is,
+        # otherwise we get weird alignment issues with the sensor and the car during mapping
+        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
         self.observe(world)
         if self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
-        pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
 
 
     def setPath(self, start, end, world):
