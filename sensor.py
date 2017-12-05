@@ -39,7 +39,11 @@ class Sensor:
         nearestHit = None
         distToNearestHit = float("inf")
         # find the first point of collision of the sensor's beam
+        ctr = 0
         for obstacle in world.obstacles:
+            if ctr < 4:
+                ctr += 1
+                continue
             hit = obstacle.collideline(beam)
             if hit:
                 distToHit = dist(hit, start)
