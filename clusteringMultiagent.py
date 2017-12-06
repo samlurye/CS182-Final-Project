@@ -207,6 +207,17 @@ class AgglomerativeAgent:
 			clusters[i] = tree[i].data
 		return MultiAgent.getPaths(clusters)
 
+def RandomAgent(MultiAgent):
+
+	def __init__(self, cars, passengers, world):
+		MultiAgent.__init__(self, cars, passengers, world)
+		self.clusters = dict()
+
+	def getPaths(self)
+		for passenger in range(len(passengers)):
+			car = numpy.random.randint(len(cars))
+			self.clusters[car].extend(passenger["startCoords"], passenger["endCoords"])
+		return MultiAgent.getPaths(self.clusters)
 
 
 
