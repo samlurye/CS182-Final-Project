@@ -8,6 +8,7 @@ import numpy
 import car
 import customer
 import sys
+from collections import dequeue
 
 class MultiAgent:
 
@@ -30,14 +31,18 @@ class MultiAgent:
 		else:
 			return 0
 
-	def getPaths(self, travelPoints):
+	def naiveGetPaths(self, travelPoints):
 		plan = dict()
 		for car in self.cars:
+			startpoints = list()
+			endpoints = list()
 			points = list()
 			for point in travelPoints[car.i]:
-				points.extend(point["startCoords"], point["endCoords"])
+				startpoints.append(point["startCoords"])
+				endpoints.append(point["endCoords"])
 			start = car.xy
-			points = points.sort(lambda x, y: dist(x, y ,start))
+			points.extend(startpoints.sort(lambda x, y: dist(x, y ,start)))
+			points.extend(endpoints.sort(lambda x, y: dist(x, y ,start)))
 			path = list()
 			path.append(self.prm.getPaths(start, points[0], self.world))
 			for i in range(len(points) - 1):
@@ -45,6 +50,37 @@ class MultiAgent:
 			plan[car.i] = path
 		return plan
 
+	def orderedInsert(lst, el):
+		for i in range(lst):
+			if(compPoints(el, lst[i]) == 0):
+				return lst.insert(i, lst)
+		return lst.append(el)
+
+	def greedyGetPaths(self, travelPoints, maxPassengers = 4):
+		plans = queue()
+		for car in self.cars:
+			orderdpts = list()
+			path = list()
+			front = list()
+			stateDict = dict()
+			for i in self.cars:
+				points = cars[i]
+				for pt in points:
+					front.orderedInsert(pt["startCoords"])
+					stateDict[pt["startCoords"]] = pt["endCoords"]
+
+			while len(front) != 0:
+				el = lst.dequeue()
+				if el in stateDict:
+					front.orderdInsert(stateDict[el])
+				orderedpts.append(el)
+
+			path.append(self.prm.getPaths(start, orderedpts[0], self.world))
+			for i in range(len(orderdpts) - 1):
+				path.append(self.prm.getPaths(orderdpts[i], orderedpts[i + 1], self.world))
+			plans[car.i] = path
+		return plan
+			
 	
 class KMeansClusteringAgent(MultiAgent):
 
@@ -116,7 +152,7 @@ class KMeansClusteringAgent(MultiAgent):
 		return self.clusters
 
 	def getPaths(self):
-		return Multiagent.getPaths(self.clusters)
+		return Multiagent.greedyGetPaths(self.clusters)
 
 class Tree:
 	def __init__(self, data = None, left = None, right = None):
