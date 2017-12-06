@@ -246,6 +246,10 @@ class MappingAgent(Car):
 
     def corners(self, obstacles):
         for obstacle in obstacles:
+            obstacle = sorted(obstacle, key=lambda x:x[0])
+            obstacle = sorted(obstacle, key=lambda x:x[1])
+            if len(obstacle) > 0:
+                self.obstacleCorners.append((obstacle[0], obstacle[len(obstacle) - 1]))
             if len(obstacle):
                 obstacle = sorted(obstacle, key=lambda x:x[0])
                 left = obstacle[0][0]

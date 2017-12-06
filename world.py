@@ -103,7 +103,7 @@ class World:
             # leave this here please
             self.clock.tick(self.frameRate)
         self.cars[0].buildMap()
-        self.cars[0].thresh(0.02)
+        self.cars[0].thresh(0.05)
         self.cars[0].drawMap(self)
         self.obstacleBeliefs = self.cars[0].getObstacles(self)
         for i in range(0, len(self.obstacleBeliefs), 2):

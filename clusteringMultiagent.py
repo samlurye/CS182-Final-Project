@@ -254,3 +254,4 @@ def RandomAgent(MultiAgent):
 			car = numpy.random.randint(len(cars))
 			self.clusters[car].extend(passenger["startCoords"], passenger["endCoords"])
 		return MultiAgent.getPaths(self.clusters)
+
