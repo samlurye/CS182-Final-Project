@@ -187,7 +187,7 @@ class MappingAgent(Car):
                     points.append(cell)
         return points
 
-    def generateRandomMeans(self, width, height, k = 10):
+    def generateRandomMeans(self, width, height, k = 15):
         means = list()
         for i in range(k):
             means.append((numpy.random.randint(0, width), numpy.random.randint(0, height)))
@@ -197,9 +197,7 @@ class MappingAgent(Car):
         return sqrt((x1 - y1) ** 2 + (x2 - y2) ** 2)
 
     def iterateMeans(self, clusters, means):
-        print "iterateMeans"
         for c in range(len(clusters)):
-            print "means"
             cluster = clusters[c]
             if not len(cluster) == 0:
                 l = len(cluster)
@@ -224,7 +222,6 @@ class MappingAgent(Car):
                     change = True
                     appendList[minIndex].append(point)
                     clusters[c].remove(point)
-        print change
         if not change:
             return clusters
         else:
@@ -253,6 +250,14 @@ class MappingAgent(Car):
             obstacle = sorted(obstacle, key=lambda x:x[1])
             if len(obstacle) > 0:
                 self.obstacleCorners.append((obstacle[0], obstacle[len(obstacle) - 1]))
+            if len(obstacle):
+                obstacle = sorted(obstacle, key=lambda x:x[0])
+                left = obstacle[0][0]
+                right = obstacle[len(obstacle) - 1][0]
+                obstacle = sorted(obstacle, key=lambda x:x[1])
+                top = obstacle[0][1]
+                bottom = obstacle[len(obstacle) - 1][1]
+                self.obstacleCorners.extend([(left, top), (right, bottom)])
         return self.obstacleCorners
 
     def getObstacles(self, world):

@@ -90,13 +90,16 @@ class World:
             pygame.display.update()
             # leave this here please
             self.clock.tick(self.frameRate)
-
         self.cars[0].buildMap()
         self.cars[0].thresh(0.05)
         self.cars[0].drawMap(self)
         self.obstacleBeliefs = self.cars[0].getObstacles(self)
-        print self.obstacleBeliefs
-        pygame.display.update()
+        for i in range(0, len(self.obstacleBeliefs), 2):
+            x = self.obstacleBeliefs[i][0]
+            y = self.obstacleBeliefs[i][1]
+            width = abs(self.obstacleBeliefs[i + 1][0] - x)
+            height = abs(self.obstacleBeliefs[i + 1][1] - y)
+            self.obstacles.append(Obstacle(x, y, width, height, (0, 0, 0)))
 
     def run(self):
         ################## DON'T FORGET TO CITE THIS CODE #########################
@@ -104,7 +107,7 @@ class World:
         # if you want to run mapping, just set self.mode to World.MAP_ONLY
         # please don't replace this with what used to be here
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP:
-            self.mapWorld(2000)
+            self.mapWorld(4000)
             if self.mode == World.MAP_ONLY:
                 return
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:

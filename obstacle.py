@@ -8,8 +8,9 @@ class Obstacle(pygame.Rect):
     BOTTOMRIGHT = 2
     BOTTOMLEFT = 3
 
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, color=(0, 0, 255)):
         pygame.Rect.__init__(self, x, y, width, height)
+        self.color = color
         self.corners = [
             (x, y),
             (x + width, y),
@@ -18,7 +19,7 @@ class Obstacle(pygame.Rect):
         ]
 
     def update(self, world):
-        pygame.draw.rect(world.screen, (0, 0, 255), self)
+        pygame.draw.rect(world.screen, self.color, self)
 
     # check to see if point inside obstacle
     def collidepoint(self, point, radius=0):
