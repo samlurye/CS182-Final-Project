@@ -8,24 +8,92 @@ import numpy
 import car
 import customer
 import sys
+from collections import dequeue
 
-
-class KMeansClusteringAgent:
+class MultiAgent:
 
 	def __init__(self, cars, passengers, world):
-		self.means = dict()
-
-		self.clusters = dict()
 		self.cars = cars
 		self.passengers = passengers
 		self.world = world
+		self.prm = self.world.prm
+
+	def euclid(start, end):
+		return sqrt((start[0] - end[0])**2 + (start[1] - end[1])**2)
+
+	def compPoints(x, y, car):
+		distx = self.euclid(x, car)
+		disty = self.euclid(y, car)
+		if distx < disty:
+			return -1
+		elif distx > disty:
+			return 1
+		else:
+			return 0
+
+	def naiveGetPaths(self, travelPoints):
+		plan = dict()
+		for car in self.cars:
+			startpoints = list()
+			endpoints = list()
+			points = list()
+			for point in travelPoints[car.i]:
+				startpoints.append(point["startCoords"])
+				endpoints.append(point["endCoords"])
+			start = car.xy
+			points.extend(startpoints.sort(lambda x, y: dist(x, y ,start)))
+			points.extend(endpoints.sort(lambda x, y: dist(x, y ,start)))
+			path = list()
+			path.append(self.prm.getPaths(start, points[0], self.world))
+			for i in range(len(points) - 1):
+				path.append(self.prm.getPaths(points[i], points[i + 1], self.world))
+			plan[car.i] = path
+		return plan
+
+	def orderedInsert(lst, el):
+		for i in range(lst):
+			if(compPoints(el, lst[i]) == 0):
+				return lst.insert(i, lst)
+		return lst.append(el)
+
+	def greedyGetPaths(self, travelPoints, maxPassengers = 4):
+		plans = queue()
+		for car in self.cars:
+			orderdpts = list()
+			path = list()
+			front = list()
+			stateDict = dict()
+			for i in self.cars:
+				points = cars[i]
+				for pt in points:
+					front.orderedInsert(pt["startCoords"])
+					stateDict[pt["startCoords"]] = pt["endCoords"]
+
+			while len(front) != 0:
+				el = lst.dequeue()
+				if el in stateDict:
+					front.orderdInsert(stateDict[el])
+				orderedpts.append(el)
+
+			path.append(self.prm.getPaths(start, orderedpts[0], self.world))
+			for i in range(len(orderdpts) - 1):
+				path.append(self.prm.getPaths(orderdpts[i], orderedpts[i + 1], self.world))
+			plans[car.i] = path
+		return plan
+			
+	
+class KMeansClusteringAgent(MultiAgent):
+
+	def __init__(self, cars, passengers, world):
+		MultiAgent.__init__(self, cars, passengers, world)
+		self.means = dict()
+		self.clusters = dict()
+		
 
 	def getStartingMeans(self):
 		for car in self.cars:
 			self.means[car.i] = car.xy
 
-	def euclid(start, end):
-		return sqrt((start[0] - end[0])**2 + (start[1] - end[1])**2)
 
 	def dist(mean, passenger):
 		return self.euclid(mean, passenger["startCoords"]) + self.euclid(mean, passenger["endCoords"])
@@ -55,7 +123,7 @@ class KMeansClusteringAgent:
 		swap = False
 		updates = dict()
 		for cluster in self.clusters.keys():
-			for passinger in self.clusters[cluster]:
+			for passenger in self.clusters[cluster]:
 				minDist = sys.maxint
 				minMean = cluster
 				for mean in self.means.keys():
@@ -71,6 +139,7 @@ class KMeansClusteringAgent:
 			self.clusters[el].extend(updates[el])
 		return swap
 
+
 	def KMeans(self):
 		self.getStartingMeans()
 		self.assignMeans()
@@ -81,6 +150,9 @@ class KMeansClusteringAgent:
 			if not self.updateClusters():
 				break
 		return self.clusters
+
+	def getPaths(self):
+		return Multiagent.greedyGetPaths(self.clusters)
 
 class Tree:
 	def __init__(self, data = None, left = None, right = None):
@@ -97,6 +169,7 @@ class AgglomerativeAgent:
 		self.passengers = passengers
 		self.world = world
 		self.tree = Tree()
+		self.paths = dict()
 
 	def mean(self, cluster):
 		x = 0
@@ -142,13 +215,42 @@ class AgglomerativeAgent:
 		return clustered
 
 
+	def getClusters(tree, num):
+		if(len(tree) > num):
+			return tree
+		
+		newtree = list()
+		for t in tree:
+			newtree.append(t.left)
+			newtree.append(t.right)
+		return getClusters(newtree, num)
+
 	def agglomerative(self, roots):
 		treeLst = list()
 		for root in roots:
 			treeList.append(Tree(root))
 
 		while(len(TreeList) > 1):
-			treeLIst = self.cluster(treeList)
+			treeList = self.cluster(treeList)
 
 		return treeList
 
+
+	def getPaths(self):
+		trees = self.getClusters(self.tree, len(self.cars))
+		clusters = dict()
+		for i in len(trees):
+			clusters[i] = tree[i].data
+		return MultiAgent.getPaths(clusters)
+
+def RandomAgent(MultiAgent):
+
+	def __init__(self, cars, passengers, world):
+		MultiAgent.__init__(self, cars, passengers, world)
+		self.clusters = dict()
+
+	def getPaths(self)
+		for passenger in range(len(passengers)):
+			car = numpy.random.randint(len(cars))
+			self.clusters[car].extend(passenger["startCoords"], passenger["endCoords"])
+		return MultiAgent.getPaths(self.clusters)

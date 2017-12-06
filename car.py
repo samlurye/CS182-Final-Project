@@ -295,6 +295,7 @@ class NavigationAgent(Car):
         self.endPoints = None
         self.i = 0
         self.pathLength = 0
+        self.distanceTraveled = 0 
 
     def update(self, world):
         if self.i < len(self.currentPath) - 1:
@@ -320,6 +321,15 @@ class CustomerAgent(NavigationAgent):
         self.currentPath = self.currentPath + self.prm.getPath(self.endPoints2[0], self.endPoints2[1], world)
         self.i = 0
         self.pathLength = 0
+
+        # length of two lines in pathway
+        dist1 = math.hypot(start[0] - middle[0], start[1] - middle[1])
+        dist2 = math.hypot(middle[0] - end[0], middle[1] - end[1])
+        # print("working")
+        # print(dist1)
+        self.distanceTraveled += (dist1 + dist2)
+        # print(self.distanceTraveled)
+
 
 class DataCollectionAgent(NavigationAgent):
 
