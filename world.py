@@ -1,3 +1,4 @@
+import sys
 import pygame
 import math
 import random
@@ -10,6 +11,16 @@ from clusteringMultiagent import *
 from efficiencyTracker import * 
 
 class World:
+
+    options = {"PASSENGER_PICKUP" : 0,
+           "RANDOM_NAV" : 1,
+           "MAP_ONLY" : 2,
+           "DATA_COLLECTION" : 3,
+           "MAP_AND_PICKUP" : 4,
+           "MULTIAGENT_PICKUP" : 5,
+           "PATH_EFFICIENCY_TRACKER" : 6,
+           "MAP_AND_SHOW_PRM" : 7,
+    }
 
     # run only the multi-agent part of the program
     PASSENGER_PICKUP = 0
@@ -53,7 +64,8 @@ class World:
         self.obstacleBeliefs = self.obstacles[:]
 
         ### please just use this I promise everything you have is going to work ###
-        self.mode = World.MAP_AND_SHOW_PRM
+        
+        self.mode = World.options[sys.argv[1]]
 
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
@@ -82,7 +94,7 @@ class World:
                         dobreak = False
                         break
                 if dobreak:
-                    self.cars.append(CustomerAgent(xy[0], xy[1], self, i, self.customers))
+                    self.cars.append(CustomerMultiAgent(xy[0], xy[1], self, i, self.customers))
                     self.cars[len(self.cars) - 1].prm = self.prm
                     break
         
