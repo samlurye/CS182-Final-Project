@@ -256,7 +256,3 @@ def RandomAgent(MultiAgent):
 			self.clusters[car].extend(passenger["startCoords"], passenger["endCoords"])
 		return MultiAgent.getPaths(self.clusters)
 
-
-
-
-
