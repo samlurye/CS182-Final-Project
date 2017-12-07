@@ -304,6 +304,23 @@ class NavigationAgent(Car):
 
 class CustomerAgent(NavigationAgent):
 
+    def __init__(self, x, y, world, IDnum):
+        NavigationAgent.__init__(self, x, y, world, IDnum)
+        
+
+    # takes in a MIDDLE
+    def setPath(self, start, middle, end, world):
+
+        self.currentPath = self.prm.getPath(start, middle, world) + self.prm.getPath(middle, end, world)
+
+        # length of two lines in pathway
+        dist1 = math.hypot(start[0] - middle[0], start[1] - middle[1])
+        dist2 = math.hypot(middle[0] - end[0], middle[1] - end[1])
+        self.distanceTraveled += (dist1 + dist2)
+        # print(self.distanceTraveled)
+
+class CustomerMultiAgent(NavigationAgent):
+
     def __init__(self, x, y, world, IDnum, customers):
         NavigationAgent.__init__(self, x, y, world, IDnum)
         self.customers = customers

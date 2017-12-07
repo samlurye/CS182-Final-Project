@@ -80,7 +80,7 @@ class World:
                         dobreak = False
                         break
                 if dobreak:
-                    self.cars.append(CustomerAgent(xy[0], xy[1], self, i, self.customers))
+                    self.cars.append(CustomerMultiAgent(xy[0], xy[1], self, i, self.customers))
                     self.cars[len(self.cars) - 1].prm = self.prm
                     break
         
