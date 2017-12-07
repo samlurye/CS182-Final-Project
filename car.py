@@ -99,14 +99,6 @@ class MappingAgent(Car):
         self.pathLength = 0
         self.mode = 0
 
-    # generates n uniformly distributed particles
-    def generateNParticles(self, n, world):
-        particles = []
-        for i in range(n):
-            point = (random.randint(0, world.displayWidth - 1), random.randint(0, world.displayHeight - 1))
-            particles.append(point)
-        return particles
-
     def blankMap(self):
         dist = dict()
         for i in range(self.displayWidth):
@@ -323,10 +315,7 @@ class CustomerAgent(NavigationAgent):
         NavigationAgent.setPath(self, start, end, world)
 
         # length of two lines in pathway
-        dist1 = math.hypot(start[0] - middle[0], start[1] - middle[1])
-        dist2 = math.hypot(middle[0] - end[0], middle[1] - end[1])
-        # print("working")
-        # print(dist1)
+        dist1 = math.hypot(start[0] - end[0], start[1] - end[1])
         self.distanceTraveled += (dist1 + dist2)
         # print(self.distanceTraveled)
 
