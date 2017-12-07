@@ -6,11 +6,8 @@ from car import *
 import time
 from PRM import *
 from customer import *
-<<<<<<< HEAD
 from clusteringMultiagent import *
-=======
 from efficiencyTracker import * 
->>>>>>> 9a637add2eaee1c83ad467b1d91623a9438f6f4f
 
 class World:
 
@@ -24,14 +21,13 @@ class World:
     DATA_COLLECTION = 3
     # run mapping and multi-agent
     MAP_AND_PICKUP = 4
-<<<<<<< HEAD
+
     MULTIAGENT_PICKUP = 5
-=======
+
     # track path efficiency for multi-agent
-    PATH_EFFICIENCY_TRACKER = 5
+    PATH_EFFICIENCY_TRACKER = 6
     # map, and use map to generate prm
-    MAP_AND_SHOW_PRM = 6
->>>>>>> 9a637add2eaee1c83ad467b1d91623a9438f6f4f
+    MAP_AND_SHOW_PRM = 7
 
     def __init__(self):
         pygame.init()
@@ -53,7 +49,7 @@ class World:
             Obstacle(150, 300, 100, 100),
             Obstacle(300, 0, 300, 75)
         ]
-<<<<<<< HEAD
+
         ### please just use this I promise everything you have is going to work ###
         self.mode = World.MULTIAGENT_PICKUP
 
