@@ -133,6 +133,8 @@ class World:
         paths = clusterAgent.getPaths()
 
         while len(self.customers.waitingCustomers) > 0 or len(self.customers.drivingCustomers) > 0:
+            for event in pygame.event.get():
+                pass
             self.screen.fill((255, 255, 255))
             for car in self.cars:
                 if not car.currentPath and len(paths[car.IDnumber]) > 0:
