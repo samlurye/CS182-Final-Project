@@ -7,7 +7,7 @@ import time
 import numpy
 import sys
 
-################## DON'T FORGET TO CITE THIS CODE #########################
+################## https://www.pygame.org/wiki/RotateCenter #########################
 def rot_center(image, angle):
     """rotate an image while keeping its center and size"""
     orig_rect = image.get_rect()
@@ -167,9 +167,6 @@ class MappingAgent(Car):
 
     def drawMap(self, world):
         print "drawing"
-        # Allie this is going to give you a merge conflict but please leave it in the loop
-        # hit 'M' to exit the loop
-        # otherwise the belief distribution will show up for one frame and immediately get erased
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_m:
@@ -248,8 +245,6 @@ class MappingAgent(Car):
         for obstacle in obstacles:
             obstacle = sorted(obstacle, key=lambda x:x[0])
             obstacle = sorted(obstacle, key=lambda x:x[1])
-            if len(obstacle) > 0:
-                self.obstacleCorners.append((obstacle[0], obstacle[len(obstacle) - 1]))
             if len(obstacle):
                 obstacle = sorted(obstacle, key=lambda x:x[0])
                 left = obstacle[0][0]
@@ -265,9 +260,8 @@ class MappingAgent(Car):
         means = self.kMeans(borders, self.displayWidth, self.displayHeight)
         print len(means)
         corners = self.corners(means)
-
-        for corner in corners:
-            pygame.draw.circle(world.screen, (255,0, 0), (int(corner[0]), int(corner[1])), 10)
+        """for corner in corners:
+            pygame.draw.circle(world.screen, (255,0, 0), (int(corner[0]), int(corner[1])), 10)"""
         pygame.display.update()
         print corners
         print "end getObstacles"
@@ -292,6 +286,8 @@ class MappingAgent(Car):
 
 class NavigationAgent(Car):
 
+    """Agent that can navigate the world automatically using a PRM"""
+
     def __init__(self, x, y, world, IDnum):
         Car.__init__(self, x, y, world, IDnum)
         self.prm = None
@@ -309,6 +305,7 @@ class NavigationAgent(Car):
         pygame.draw.circle(world.screen, (255, 0, 0), (int(round(self.xy[0])), int(round(self.xy[1]))), 10)
         world.screen.blit(self.font.render("Car" + str(self.IDnumber + 1), True, (20,0,0)), (int(round(self.xy[0])), int(round(self.xy[1]))))
 
+    # set a path for the car to follow
     def setPath(self, start, end, world):
         self.endPoints = start, end
         self.currentPath = self.prm.getPath(self.endPoints[0], self.endPoints[1], world)
@@ -336,6 +333,8 @@ class CustomerAgent(NavigationAgent):
 
 
 class DataCollectionAgent(NavigationAgent):
+
+    """Automatically collects data on PRM vs RRT"""
 
     def __init__(self, x, y, world, IDNum):
         NavigationAgent.__init__(self, x, y, world, IDNum)

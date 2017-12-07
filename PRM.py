@@ -105,6 +105,7 @@ class DynamicRRT(RRT):
                 return self.sample(world)
         return point
 
+    # see report for explanation of this extend operation
     def extend(self, p1, p2, world):
         dirInput = 0
         if p2[2] - p1[2] > 0:
@@ -154,9 +155,13 @@ class PRM:
 
     def __init__(self, world):
         self.points = KDTree(2, [world.kdtreeStart])
+        # number of samples in the prm
         self.size = 2500
+        # number of connections per sample
+        self.connsPerSample = 6
         self.carSize = world.carSize
         self.getPoints(world)
+        # edges of the prm
         self.connections = self.getConnections(world)
 
     def sample(self, world):
@@ -184,18 +189,21 @@ class PRM:
                     paths[p1, p2] = RRT(p1, p2).run(world)
         return paths
 
+    # generate a path (a list of points along the prm) from p1 to p2
     def getPath(self, p1, p2, world):
         if not self.points.contains(p1):
             self.insertConnection(p1, world)
         if not self.points.contains(p2):
             self.insertConnection(p2, world)
         path = AStarSearch(self.connections, p1, p2, 5)
+        # use RRT if no path exists along prm
         while not path:
             path = RRT(p1, p2).run(world)
         return path
 
+    # insert a point into the prm
     def insertConnection(self, point, world):
-        nns = self.points.kNearestNeighbors(point, 6, [])
+        nns = self.points.kNearestNeighbors(point, self.connsPerSample, [])
         self.connections[point] = []
         for p in nns:
             collided = False
@@ -207,11 +215,12 @@ class PRM:
                 self.connections[p[0]].append(point)
         self.points.insert(point)
 
+    # form the prm from the set of sampled points
     def getConnections(self, world):
         connections = dict()
         pointsList = self.points.list()
         for point in pointsList:
-            nns = self.points.kNearestNeighbors(point, 7, [])
+            nns = self.points.kNearestNeighbors(point, self.connsPerSample + 1, [])
             connections[point] = []
             for p in nns:
                 collided = False
