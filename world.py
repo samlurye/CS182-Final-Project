@@ -51,7 +51,7 @@ class World:
         ]
 
         ### please just use this I promise everything you have is going to work ###
-        self.mode = World.MULTIAGENT_PICKUP
+        self.mode = World.MAP_AND_SHOW_PRM
 
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
@@ -61,6 +61,7 @@ class World:
 
 
         self.cars = list()
+        self.frames = 0
         self.frameRate = 60
 
         ###########################################################################
@@ -186,7 +187,7 @@ class World:
 
     def run(self):
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
-            self.mapWorld(2000)
+            self.mapWorld(200)
             if self.mode == World.MAP_ONLY:
                 return
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:

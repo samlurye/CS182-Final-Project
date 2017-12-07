@@ -85,8 +85,6 @@ class MappingAgent(Car):
 
     def __init__(self, x, y, world, idnum):
         Car.__init__(self, x, y, world, idnum)
-        self.numParticles = 5000
-        self.particles = self.generateNParticles(self.numParticles, world)
         self.displayWidth = world.displayWidth
         self.displayHeight = world.displayHeight
         self.map = self.blankMap()
