@@ -51,7 +51,7 @@ class World:
         ]
 
         ### please just use this I promise everything you have is going to work ###
-        self.mode = World.MAP_AND_SHOW_PRM
+        self.mode = World.MULTIAGENT_PICKUP
 
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)

@@ -58,19 +58,27 @@ class MultiAgent:
 	def greedyGetPaths(self, travelPoints, maxPassengers = 4):
 		plans = dict()
 		for car in self.cars:
+			xy = car.xy
 			orderedpts = list()
 			path = list()
 			front = []
 			stateDict = dict()
 			for pt in self.passengers:
-				self.orderedInsert(front, pt["startCoords"], car)
+				front.insert(0, pt["startCoords"])
 				stateDict[pt["startCoords"]] = pt["endCoords"]
 
 			while len(front) != 0:
-				el = front.pop(0)
-				if el in stateDict:
-					self.orderedInsert(front, stateDict[el], car)
-				orderedpts.append(el)
+				mindist = sys.maxint
+				minpt = None
+				for pt in front:
+					if self.euclid(pt, xy) < mindist:
+						mindist = self.euclid(pt, xy)
+						minpt = pt
+				if minpt in stateDict:
+					front.insert(0, stateDict[minpt])
+				front.remove(minpt)
+				xy = minpt
+				orderedpts.append(minpt)
 
 			plans[car.IDnumber] = orderedpts
 		return plans
