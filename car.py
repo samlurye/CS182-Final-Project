@@ -316,7 +316,7 @@ class CustomerAgent(NavigationAgent):
 
         # length of two lines in pathway
         dist1 = math.hypot(start[0] - end[0], start[1] - end[1])
-        self.distanceTraveled += (dist1 + dist2)
+        self.distanceTraveled += (dist1)
         # print(self.distanceTraveled)
 
 
