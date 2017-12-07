@@ -269,8 +269,7 @@ class MappingAgent(Car):
         for corner in corners:
             pygame.draw.circle(world.screen, (255,0, 0), (int(corner[0]), int(corner[1])), 10)
         pygame.display.update()
-        print corners
-        print "end getObstacles"
+        self.corners = corners
         return corners
 
     def update(self, world):
@@ -290,6 +289,7 @@ class MappingAgent(Car):
         self.i = 0
         self.pathLength = 0
 
+
 class NavigationAgent(Car):
 
     def __init__(self, x, y, world, IDnum):
@@ -301,7 +301,7 @@ class NavigationAgent(Car):
         self.pathLength = 0
 
     def update(self, world):
-        if self.i < len(self.currentPath) - 1:
+        if self.currentPath and self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
@@ -316,14 +316,13 @@ class NavigationAgent(Car):
 
 class CustomerAgent(NavigationAgent):
 
+    def __init__(self, x, y, world, IDnum, customers):
+        NavigationAgent.__init__(self, x, y, world, IDnum)
+        self.customers = customers
+
     # takes in a MIDDLE
-    def setPath(self, start, middle, end, world):
-        self.endPoints1 = start, middle
-        self.endPoints2 = middle, end
-        self.currentPath = self.prm.getPath(self.endPoints1[0], self.endPoints1[1], world)
-        self.currentPath = self.currentPath + self.prm.getPath(self.endPoints2[0], self.endPoints2[1], world)
-        self.i = 0
-        self.pathLength = 0
+    def setPath(self, start, end, world):
+        NavigationAgent.setPath(self, start, end, world)
 
 class DataCollectionAgent(NavigationAgent):
 

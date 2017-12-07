@@ -6,6 +6,7 @@ from car import *
 import time
 from PRM import *
 from customer import *
+from clusteringMultiagent import *
 
 class World:
 
@@ -14,6 +15,7 @@ class World:
     MAP_ONLY = 2
     DATA_COLLECTION = 3
     MAP_AND_PICKUP = 4
+    MULTIAGENT_PICKUP = 5
 
     def __init__(self):
         pygame.init()
@@ -37,7 +39,7 @@ class World:
             Obstacle(300, 0, 300, 75)
         ]
         ### please just use this I promise everything you have is going to work ###
-        self.mode = World.DATA_COLLECTION
+        self.mode = World.MULTIAGENT_PICKUP
         self.carSize = (20, 20)
         self.kdtreeStart = (0.45 * self.displayWidth, 0.8 * self.displayWidth)
         self.prm = PRM(self)
@@ -45,14 +47,28 @@ class World:
         self.rotInput = 0   # 1 if left-arrow key, -1 if right-arrow key, 0 if no input
         self.frames = 0
         self.frameRate = 20
+        self.cars = list()
+
         ###########################################################################
 
     def initPassengerPickup(self):
         self.customers = Customers(self)
         self.numCars = 5
-        self.cars = [CustomerAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, i) for i in range(self.numCars)]
-        for car in self.cars:
-            car.prm = self.prm
+        for i in range(20):
+            self.customers.newCustomer(self)
+        for i in range(self.numCars):
+            while True:
+                xy = (numpy.random.randint(0, self.displayWidth), numpy.random.randint(0, self.displayHeight))
+                dobreak = True
+                for obstacle in self.obstacles:
+                    if obstacle.collidepoint(xy):
+                        dobreak = False
+                        break
+                if dobreak:
+                    self.cars.append(CustomerAgent(xy[0], xy[1], self, i, self.customers))
+                    self.cars[len(self.cars) - 1].prm = self.prm
+                    break
+        
 
     def initDataCollection(self):
         self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
@@ -63,6 +79,49 @@ class World:
         self.cars = [NavigationAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
         self.numCars = 1
         self.cars[0].prm = self.prm
+
+    def multiAgentPickup(self):
+        self.initPassengerPickup()
+        endpts = dict()
+        startpts = dict()
+        for cust in self.customers.waitingCustomers:
+            endpts[cust["endCoords"]] = cust["numCustomer"]
+            startpts[cust["startCoords"]] = cust["numCustomer"]
+        
+        clusterAgent = KMeansClusteringAgent(self.cars, self.customers, self)
+
+        clusterAgent.KMeans()
+        paths = clusterAgent.getPaths()
+
+        while len(self.customers.waitingCustomers) > 0 or len(self.customers.drivingCustomers) > 0:
+            self.screen.fill((255, 255, 255))
+            for car in self.cars:
+                if not car.currentPath and len(paths[car.IDnumber]) > 0:
+                    print paths
+                    nextpt = paths[car.IDnumber].pop(0)
+                    car.setPath(car.xy, nextpt, self)
+                elif car.currentPath and car.i >= len(car.currentPath) - 1:
+                    if car.endPoints:
+                        print car.endPoints
+                        if car.endPoints[1] in endpts:
+                            print "dropping off"
+                            self.customers.finishedRide(self, endpts[car.endPoints[1]])
+                        elif car.endPoints[1] in startpts:
+                            print "picking up"
+                            self.customers.pickupCustomer(self, startpts[car.endPoints[1]])
+                    if(len(paths[car.IDnumber]) > 0):
+                        print paths
+                        nextpt = paths[car.IDnumber].pop(0)
+                        car.setPath(car.xy, nextpt, self)
+                car.update(self)
+                self.customers.update(self)
+                self.clock.tick(self.frameRate)
+            
+            for obstacle in self.obstacles:
+                obstacle.update(self)
+            
+            pygame.display.update()
+            
 
     def mapWorld(self, maxCount = 10000):
 
@@ -116,6 +175,8 @@ class World:
             self.initDataCollection()
         if self.mode == World.RANDOM_NAV:
             self.initRandom()
+        if self.mode == World.MULTIAGENT_PICKUP:
+            self.multiAgentPickup()
         while self.isRunning:
             self.frames += 1
             for event in pygame.event.get():

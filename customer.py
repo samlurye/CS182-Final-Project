@@ -25,15 +25,19 @@ class Customers:
     def pickupCustomer(self, world, customerNumber):
 
         # gets the passenger's dictionary
-        customerToPickup = [x for x in self.waitingCustomers if x[numCustomer] == customerNumber][0]
-        self.drivingCustomers.append(customerToPickup)
-        self.waitingCustomers.remove(customerToPickup)
+        for x in self.waitingCustomers:
+            if x["numCustomer"] == customerNumber:
+                self.drivingCustomers.append(x)
+                self.waitingCustomers.remove(x)
+                break
+        
+        
 
     # adds a new, numbered customer to waitingCustomers with a start/end destination
     def newCustomer(self, world):
         # Adds a new customer to the waiting list. Customers are dicts with a number, a start point, and a destination point
         self.waitingCustomers.append({"numCustomer": len(self.waitingCustomers) + len(self.drivingCustomers) + self.numServedCustomers + 1, \
-            "startCoords": world.prm.sample(world), "endCoords": world.prm.sample(world)})
+            "startCoords": world.prm.sampleInt(world), "endCoords": world.prm.sampleInt(world)})
 
 
     def update(self, world):
@@ -47,9 +51,9 @@ class Customers:
         for customer in self.drivingCustomers:
             startCoords = (int(round(customer["startCoords"][0])), int(round(customer["startCoords"][1])))
             endCoords = (int(round(customer["endCoords"][0])), int(round(customer["endCoords"][1])))
-            pygame.draw.circle(world.screen, (0, 100, 110), startCoords, 6)
+            #pygame.draw.circle(world.screen, (0, 100, 110), startCoords, 6)
             pygame.draw.circle(world.screen, (0, 100, 110), endCoords, 6)
-            world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " pickup", True, (0,0,0)), startCoords)
+            #world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " pickup", True, (0,0,0)), startCoords)
             world.screen.blit(self.font.render("Passenger " + str(customer["numCustomer"]) + " being dropped off", True, (0,0,0)), endCoords)
 
 

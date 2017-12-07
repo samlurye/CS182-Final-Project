@@ -167,6 +167,14 @@ class PRM:
                 return self.sample(world)
         return point
 
+    def sampleInt(self, world):
+        point = (random.randint(0, world.displayWidth), random.randint(0, world.displayHeight))
+        for obstacle in world.obstacles:
+            if obstacle.colliderect((point[0] - self.carSize[0] / 2.,
+                point[1] - self.carSize[1] / 2., self.carSize[0], self.carSize[1])):
+                return self.sampleInt(world)
+        return point
+
     def getPoints(self, world):
         for _ in range(self.size - 1):
             self.points.insert(self.sample(world))
