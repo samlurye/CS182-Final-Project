@@ -32,12 +32,13 @@ class Customers:
                 break
         
         
+    
 
     # adds a new, numbered customer to waitingCustomers with a start/end destination
     def newCustomer(self, world):
         # Adds a new customer to the waiting list. Customers are dicts with a number, a start point, and a destination point
         self.waitingCustomers.append({"numCustomer": len(self.waitingCustomers) + len(self.drivingCustomers) + self.numServedCustomers + 1, \
-            "startCoords": world.prm.sampleInt(world), "endCoords": world.prm.sampleInt(world)})
+            "startCoords": world.sampleInt(), "endCoords": world.sampleInt()})
 
 
     def update(self, world):

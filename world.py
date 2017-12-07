@@ -80,6 +80,14 @@ class World:
 
         ###########################################################################
 
+    def sampleInt(self):
+        point = (random.randint(0, self.displayWidth), random.randint(0, self.displayHeight))
+        for obstacle in self.obstacles:
+            if obstacle.colliderect((point[0] - self.carSize[0] / 2.,
+                point[1] - self.carSize[1] / 2., self.carSize[0], self.carSize[1])):
+                return self.sampleInt()
+        return point
+
     def initPassengerPickup(self):
         self.customers = Customers(self)
         self.numCars = 5
@@ -189,7 +197,7 @@ class World:
             pygame.display.update()
             self.clock.tick(self.frameRate)
         self.cars[0].buildMap()
-        self.cars[0].thresh(0.05)
+        self.cars[0].thresh(0.01)
         self.cars[0].drawMap(self)
         self.obstacleCorners = self.cars[0].getObstacles(self)
         self.obstacleBeliefs = self.obstacles[:4]
@@ -202,7 +210,8 @@ class World:
 
     def run(self):
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
-            self.mapWorld(2000)
+            self.mapWorld(10000)
+
             if self.mode == World.MAP_ONLY:
                 return
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
