@@ -73,7 +73,7 @@ class RRT:
         if random.random() < 0.05:
             return self.goal
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
-        for obstacle in world.obstacles:
+        for obstacle in world.obstacleBeliefs:
             if obstacle.colliderect((point[0] - world.cars[0].size[0] / 2.,
                 point[1] - world.cars[0].size[1] / 2., world.cars[0].size[0], world.cars[0].size[1])):
                 return self.sample(world)
@@ -83,7 +83,7 @@ class RRT:
         pointDir = (p2[0] - p1[0], p2[1] - p1[1])
         magDir = dist(pointDir, (0, 0))
         newPoint = (p1[0] + self.ext * pointDir[0] / magDir, p1[1] + self.ext * pointDir[1] / magDir)
-        for obstacle in world.obstacles:
+        for obstacle in world.obstacleBeliefs:
             if obstacle.colliderect((newPoint[0] - world.cars[0].size[0] / 2.,
                 newPoint[1] - world.cars[0].size[1] / 2., world.cars[0].size[0], world.cars[0].size[1])):
                 return None
@@ -100,7 +100,7 @@ class DynamicRRT(RRT):
             2 * random.random() * world.cars[0].maxSpeed - world.cars[0].maxSpeed,
             360 * random.random()
         )
-        for obstacle in world.obstacles:
+        for obstacle in world.obstacleBeliefs:
             if obstacle.collidepoint((point[0], point[1])):
                 return self.sample(world)
         return point
@@ -131,7 +131,7 @@ class DynamicRRT(RRT):
             speed,
             (orientation + rotInput) % 360
         )
-        for obstacle in world.obstacles:
+        for obstacle in world.obstacleBeliefs:
             if obstacle.collidepoint(newPoint):
                 return None
         return newPoint
@@ -166,7 +166,7 @@ class PRM:
 
     def sample(self, world):
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
-        for obstacle in world.obstacles:
+        for obstacle in world.obstacleBeliefs:
             if obstacle.colliderect((point[0] - self.carSize[0] / 2.,
                 point[1] - self.carSize[1] / 2., self.carSize[0], self.carSize[1])):
                 return self.sample(world)
@@ -174,7 +174,7 @@ class PRM:
 
     def sampleInt(self, world):
         point = (random.randint(0, world.displayWidth), random.randint(0, world.displayHeight))
-        for obstacle in world.obstacles:
+        for obstacle in world.obstacleBeliefs:
             if obstacle.colliderect((point[0] - self.carSize[0] / 2.,
                 point[1] - self.carSize[1] / 2., self.carSize[0], self.carSize[1])):
                 return self.sampleInt(world)
@@ -215,7 +215,7 @@ class PRM:
         self.connections[point] = []
         for p in nns:
             collided = False
-            for obstacle in world.obstacles:
+            for obstacle in world.obstacleBeliefs:
                 if obstacle.collideline((point[0], point[1], p[0][0], p[0][1]), 10):
                     collided = True
             if not collided:
@@ -232,7 +232,7 @@ class PRM:
             connections[point] = []
             for p in nns:
                 collided = False
-                for obstacle in world.obstacles:
+                for obstacle in world.obstacleBeliefs:
                     if obstacle.collideline((point[0], point[1], p[0][0], p[0][1]), 10):
                         collided = True
                 if not collided:

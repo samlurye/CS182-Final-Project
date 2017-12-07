@@ -50,6 +50,8 @@ class World:
             Obstacle(300, 0, 300, 75)
         ]
 
+        self.obstacleBeliefs = self.obstacles[:]
+
         ### please just use this I promise everything you have is going to work ###
         self.mode = World.MAP_AND_SHOW_PRM
 
@@ -177,17 +179,18 @@ class World:
         self.cars[0].buildMap()
         self.cars[0].thresh(0.05)
         self.cars[0].drawMap(self)
-        self.obstacleBeliefs = self.cars[0].getObstacles(self)
-        for i in range(0, len(self.obstacleBeliefs), 2):
-            x = self.obstacleBeliefs[i][0]
-            y = self.obstacleBeliefs[i][1]
-            width = abs(self.obstacleBeliefs[i + 1][0] - x)
-            height = abs(self.obstacleBeliefs[i + 1][1] - y)
-            self.obstacles.append(Obstacle(x, y, width, height, (0, 0, 0)))
+        self.obstacleCorners = self.cars[0].getObstacles(self)
+        self.obstacleBeliefs = self.obstacles[:4]
+        for i in range(0, len(self.obstacleCorners), 2):
+            x = self.obstacleCorners[i][0]
+            y = self.obstacleCorners[i][1]
+            width = abs(self.obstacleCorners[i + 1][0] - x)
+            height = abs(self.obstacleCorners[i + 1][1] - y)
+            self.obstacleBeliefs.append(Obstacle(x, y, width, height, (0, 0, 0)))
 
     def run(self):
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
-            self.mapWorld(200)
+            self.mapWorld(2000)
             if self.mode == World.MAP_ONLY:
                 return
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
@@ -269,6 +272,9 @@ class World:
                 car.update(self)
                 # redraw all the obstacles
             for obstacle in self.obstacles:
+                obstacle.update(self)
+
+            for obstacle in self.obstacleBeliefs:
                 obstacle.update(self)
 
             # testing efficiency ratings
