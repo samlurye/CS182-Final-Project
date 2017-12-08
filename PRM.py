@@ -4,7 +4,7 @@ import time
 import math
 import heapq
 
-def AStarSearch(edges, start, goal, eps):
+def AStarSearch(edges, start, goal, eps, iterLimit=2500):
     queue = []
     visited = set([start])
     nodesExpanded = 0
@@ -12,7 +12,7 @@ def AStarSearch(edges, start, goal, eps):
         cost = dist(neighbor, start)
         heapq.heappush(queue, (cost + dist(neighbor, goal), dict(path = [neighbor], cost = cost)))
     i = 0
-    while len(queue) != 0 and i < 2500:
+    while len(queue) != 0 and i < iterLimit:
         i += 1
         currentInfo = heapq.heappop(queue)[1]
         current = currentInfo["path"][-1]
@@ -222,7 +222,7 @@ class PRM:
             self.insertConnection(p1, world)
         if not self.points.contains(p2):
             self.insertConnection(p2, world)
-        path = AStarSearch(self.connections, p1, p2, 5)
+        path = AStarSearch(self.connections, p1, p2, 5, self.size)
         # use RRT if no path exists along prm
         if not path:
             path = RRT(p1, p2).run(world)

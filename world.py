@@ -96,7 +96,8 @@ class World:
         self.cars = []
         self.numCars = 5
         self.prm = PRM(self)
-        for i in range(20):
+        numPassengers = 20
+        for i in range(numPassengers):
             self.customers.newCustomer(self)
         for i in range(self.numCars):
             while True:
