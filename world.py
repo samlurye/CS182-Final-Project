@@ -12,33 +12,36 @@ from efficiencyTracker import *
 
 class World:
 
-    options = {"PASSENGER_PICKUP" : 0,
-           "RANDOM_NAV" : 1,
-           "MAP_ONLY" : 2,
-           "DATA_COLLECTION" : 3,
-           "MAP_AND_PICKUP" : 4,
-           "MULTIAGENT_PICKUP" : 5,
-           "PATH_EFFICIENCY_TRACKER" : 6,
-           "MAP_AND_SHOW_PRM" : 7,
+    options = {
+        "RANDOM_PICKUP" : 0,
+        "RANDOM_NAV" : 1,
+        "MAP_ONLY" : 2,
+        "SHOW_PRM" : 3,
+        "MAP_AND_RANDOM_PICKUP" : 4,
+        "CLUSTERING_PICKUP" : 5,
+        "MAP_AND_CLUSTERING_PICKUP" : 6,
+        "MAP_AND_SHOW_PRM" : 7,
     }
 
     # run only the multi-agent part of the program
-    PASSENGER_PICKUP = 0
+    RANDOM_PICKUP = 0
     # agent moves randomly using the PRM
     RANDOM_NAV = 1
     # only run mapping
     MAP_ONLY = 2
     # run data collection agent, useful for visualizing the prm
-    DATA_COLLECTION = 3
+    SHOW_PRM = 3
     # run mapping and multi-agent
-    MAP_AND_PICKUP = 4
+    MAP_AND_RANDOM_PICKUP = 4
 
-    MULTIAGENT_PICKUP = 5
+    CLUSTERING_PICKUP = 5
 
-    # track path efficiency for multi-agent
-    PATH_EFFICIENCY_TRACKER = 6
+    MAP_AND_CLUSTERING_PICKUP = 6
+
     # map, and use map to generate prm
     MAP_AND_SHOW_PRM = 7
+
+    PATH_EFFICIENCY_TRACKER = 8
 
     def __init__(self):
         pygame.init()
@@ -64,7 +67,6 @@ class World:
         # the obstacles the car *thinks* exist
         self.obstacleBeliefs = self.obstacles[:]
 
-        
         self.mode = World.options[sys.argv[1]]
 
         self.carSize = (20, 20)
@@ -91,13 +93,14 @@ class World:
 
     def initPassengerPickup(self):
         self.customers = Customers(self)
+        self.cars = []
         self.numCars = 5
         self.prm = PRM(self)
         for i in range(20):
             self.customers.newCustomer(self)
         for i in range(self.numCars):
             while True:
-                xy = (numpy.random.randint(0, self.displayWidth), numpy.random.randint(0, self.displayHeight))
+                xy = self.sampleInt()
                 dobreak = True
                 for obstacle in self.obstacles:
                     if obstacle.collidepoint(xy):
@@ -159,7 +162,7 @@ class World:
                 self.customers.update(self)
                 self.clock.tick(self.frameRate)
             
-            for obstacle in self.obstacles:
+            for obstacle in self.obstacles + self.obstacleBeliefs:
                 obstacle.update(self)
             
             pygame.display.update()
@@ -260,15 +263,15 @@ class World:
 
     # main game function
     def run(self):
-        if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
+        if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_RANDOM_PICKUP or self.mode == World.MAP_AND_SHOW_PRM or self.mode == World.MAP_AND_CLUSTERING_PICKUP:
             self.mapWorld(2000)
-        if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
+        if self.mode == World.RANDOM_PICKUP or self.mode == World.MAP_AND_RANDOM_PICKUP:
             self.randomAgentPickup()
-        if self.mode == World.DATA_COLLECTION or self.mode == World.MAP_AND_SHOW_PRM:
+        if self.mode == World.SHOW_PRM or self.mode == World.MAP_AND_SHOW_PRM:
             self.initDataCollection()
         if self.mode == World.RANDOM_NAV:
             self.initRandom()
-        if self.mode == World.MULTIAGENT_PICKUP:
+        if self.mode == World.CLUSTERING_PICKUP or self.mode == World.MAP_AND_CLUSTERING_PICKUP:
             self.multiAgentPickup()
 
         if self.mode == World.PATH_EFFICIENCY_TRACKER:
@@ -290,7 +293,7 @@ class World:
                     elif event.key == pygame.K_DOWN:
                         self.dirInput = -1
                     # press 'p' for new passenger
-                    if event.key == pygame.K_p and (self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP or self.mode == World.PATH_EFFICIENCY_TRACKER):
+                    if event.key == pygame.K_p and (self.mode == World.RANDOM_PICKUP or self.mode == World.MAP_AND_RANDOM_PICKUP or self.mode == World.PATH_EFFICIENCY_TRACKER):
                         self.customers.newCustomer(self)
                         self.customers.newCustomer(self)
                         self.customers.newCustomer(self)
@@ -299,7 +302,7 @@ class World:
                     if event.key == pygame.K_r and self.mode == World.PATH_EFFICIENCY_TRACKER:
                         self.efficiencyTracker.getEfficiency()
                     # clear all waiting customers
-                    if event.key == pygame.K_c and (self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP):
+                    if event.key == pygame.K_c and (self.mode == World.RANDOM_PICKUP or self.mode == World.MAP_AND_RANDOM_PICKUP):
                         self.customers.waitingCustomers = []
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT:
@@ -314,7 +317,7 @@ class World:
             self.screen.fill((255, 255, 255))
 
             for car in self.cars:
-                if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP or self.mode == World.PATH_EFFICIENCY_TRACKER:
+                if self.mode == World.RANDOM_PICKUP or self.mode == World.MAP_AND_RANDOM_PICKUP or self.mode == World.PATH_EFFICIENCY_TRACKER:
                     # print car.i
                     if car.i >= len(car.currentPath) - 1:
                         ######## QUEUE PICKUP AGENT (Does Customer 1 then 2...) ########
@@ -346,7 +349,7 @@ class World:
             # testing efficiency ratings
             # print(self.cars[0].distanceTraveled)
 
-            if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP or self.mode == World.PATH_EFFICIENCY_TRACKER:
+            if self.mode == World.RANDOM_PICKUP or self.mode == World.MAP_AND_RANDOM_PICKUP or self.mode == World.PATH_EFFICIENCY_TRACKER:
                 self.customers.update(self)
 
             pygame.display.update()

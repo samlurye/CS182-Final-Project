@@ -186,7 +186,7 @@ class MappingAgent(Car):
         return points
 
     # generates k random means for k-means clustering
-    def generateRandomMeans(self, width, height, k = 15):
+    def generateRandomMeans(self, width, height, k = 30):
         means = list()
         for i in range(k):
             means.append((numpy.random.randint(0, width), numpy.random.randint(0, height)))
