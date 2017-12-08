@@ -362,11 +362,15 @@ class DataCollectionAgent(NavigationAgent):
         self.mode = 0
 
     def update(self, world):
+        # update the agent's position in the path
         if self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
         else:
+            # randomly sample a start point and an end point from the world;
+            # first, run PRM between these points; then, run RRT between these points;
+            # compare the results
             if len(self.currentPath) > 0:
                 if self.mode == 1:
                     print "PRM L " + str(self.pathLength) + "\n"
@@ -391,6 +395,7 @@ class DataCollectionAgent(NavigationAgent):
                 self.mode = 0
             self.i = 0
             self.pathLength = 0
+        # draw the prm
         for p1 in self.prm.connections:
             for p2 in self.prm.connections[p1]:
                 pygame.draw.line(world.screen, (0, 0, 0), p1, p2)
