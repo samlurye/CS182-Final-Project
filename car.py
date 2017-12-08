@@ -80,8 +80,7 @@ class Car:
             dist[i] = dist[i] / tot
 
 class MappingAgent(Car):
-
-    """Human-controlled car that maps using sensor data"""
+""" agent that navigates autonomously and maps the world"""
 
     def __init__(self, x, y, world, idnum):
         Car.__init__(self, x, y, world, idnum)
@@ -97,6 +96,7 @@ class MappingAgent(Car):
         self.pathLength = 0
         self.mode = 0
 
+    # initiates a blank map of the world
     def blankMap(self):
         dist = dict()
         for i in range(self.displayWidth):
@@ -104,12 +104,15 @@ class MappingAgent(Car):
                 dist[(i, j)] = 0.0
         return dist
 
+    # takes an observation based on sensor data
     def observe(self, world):
+        # gets sensor data
         readings = self.sensorModel.getReadings(world)
         for read in readings:
             if read[1] != None:
                 pos = [self.xy[0], self.xy[1]]
                 end = (round(read[1][0]), round(read[1][1]))
+                # if the sensor beam is ending on a point, record that in the occupancy grid
                 if end[0] >= 0 and end[0] <= self.displayWidth and end[1] >= 0 and end[1] <= self.displayHeight:
                     self.occupancyGrid[end]["hit"] += 1
                 slope = 0
@@ -120,6 +123,7 @@ class MappingAgent(Car):
                         slope = -1
                 else:
                     slope = float(pos[1] - end[1]) / (pos[0] - end[0])
+                #record all points that sensor beam travels through in occupancy grid
                 while abs(pos[0] - end[0]) > 1 and abs(pos[1] - end[1]) > 1:
                     if pos[0] >= 0 and pos[0] <= self.displayWidth and pos[1] >= 0 and pos[1] <= self.displayHeight:
                         self.occupancyGrid[(round(pos[0]), round(pos[1]))]["miss"] += 1
@@ -132,6 +136,7 @@ class MappingAgent(Car):
                     else:
                         pos[1] += slope
 
+    # initiate empty obstacle grid
     def blankOccupancyGrid(self):
         occupancyGrid = dict()
         for i in range(self.displayWidth + 1):
@@ -139,6 +144,7 @@ class MappingAgent(Car):
                 occupancyGrid[(i, j)] = dict(hit = 0, miss = 0)
         return occupancyGrid
 
+    # builds a map based on the occupancy grid
     def buildMap(self):
         print "building"
         for key in self.map.keys():
@@ -147,6 +153,7 @@ class MappingAgent(Car):
             else:
                 self.map[key] = 0
 
+    # thresholds the values in the occupancy grid
     def thresh(self, alpha):
         print "thresh"
         for key in self.map.keys():
@@ -155,6 +162,7 @@ class MappingAgent(Car):
             else:
                 self.map[key] = 1.0
 
+    # draws the resulting map of beliefs of obstacle positions
     def drawMap(self, world):
         print "drawing"
         while True:
@@ -167,6 +175,7 @@ class MappingAgent(Car):
             pygame.display.update()
             world.clock.tick(20)
 
+    # extracts all points where potential obstacle border exists
     def extractBorders(self):
         points = list()
         for cell in self.map.keys():
@@ -174,15 +183,18 @@ class MappingAgent(Car):
                     points.append(cell)
         return points
 
+    # generates k random means for k-means clustering
     def generateRandomMeans(self, width, height, k = 15):
         means = list()
         for i in range(k):
             means.append((numpy.random.randint(0, width), numpy.random.randint(0, height)))
         return means
 
+    # calculates distance between 
     def dist(x1, x2, y1, y2):
         return sqrt((x1 - y1) ** 2 + (x2 - y2) ** 2)
 
+    # iterates through the k-means algorithm
     def iterateMeans(self, clusters, means):
         for c in range(len(clusters)):
             cluster = clusters[c]
@@ -216,6 +228,7 @@ class MappingAgent(Car):
                 clusters[i].extend(appendList[i])
             return self.iterateMeans(clusters, means)
 
+    # starts and runs k-means
     def kMeans(self, points, width, height):
         means = self.generateRandomMeans(width, height)
         clusters = [[] for i in range(len(means))]
@@ -231,6 +244,7 @@ class MappingAgent(Car):
             clusters[minIndex].append(point)
         return self.iterateMeans(clusters, means)
 
+    # extracts the corners of an obstacle
     def corners(self, obstacles):
         for obstacle in obstacles:
             obstacle = sorted(obstacle, key=lambda x:x[0])
@@ -245,10 +259,10 @@ class MappingAgent(Car):
                 self.obstacleCorners.extend([(left, top), (right, bottom)])
         return self.obstacleCorners
 
+    # gets obstacles by running k-means
     def getObstacles(self, world):
         borders = self.extractBorders()
         means = self.kMeans(borders, self.displayWidth, self.displayHeight)
-        print len(means)
         corners = self.corners(means)
         """for corner in corners:
             pygame.draw.circle(world.screen, (255,0, 0), (int(corner[0]), int(corner[1])), 10)"""
@@ -256,6 +270,7 @@ class MappingAgent(Car):
         self.corners = corners
         return corners
 
+    # updates car in world
     def update(self, world):
         # this is going to give you another merge conflict but please leave it as is,
         # otherwise we get weird alignment issues with the sensor and the car during mapping
@@ -266,12 +281,13 @@ class MappingAgent(Car):
             self.pathLength += dist(self.xy, self.currentPath[self.i])
             self.i += 1
 
-
+    # sets path of car 
     def setPath(self, start, end, world):
         self.endPoints = start, end
         self.currentPath = self.prm.getPath(self.endPoints[0], self.endPoints[1], world)
         self.i = 0
         self.pathLength = 0
+
 
 
 class NavigationAgent(Car):
@@ -303,6 +319,7 @@ class NavigationAgent(Car):
         self.pathLength = 0
 
 class CustomerAgent(NavigationAgent):
+    """ agent that manages customer interaction"""
 
     def __init__(self, x, y, world, IDnum):
         NavigationAgent.__init__(self, x, y, world, IDnum)
@@ -320,7 +337,7 @@ class CustomerAgent(NavigationAgent):
         # print(self.distanceTraveled)
 
 class CustomerMultiAgent(NavigationAgent):
-
+    """ manages customer data"""
     def __init__(self, x, y, world, IDnum, customers):
         NavigationAgent.__init__(self, x, y, world, IDnum)
         self.customers = customers
