@@ -272,15 +272,34 @@ class AgglomerativeAgent:
 		return MultiAgent.getPaths(self, clusters)
 
 #assigns passengers to cars at random
-def RandomAgent(MultiAgent):
+class RandomMultiAgent(MultiAgent):
 
 	def __init__(self, cars, passengers, world):
 		MultiAgent.__init__(self, cars, passengers, world)
 		self.clusters = dict()
 
-	def getPaths(self):
-		for passenger in range(len(passengers)):
-			car = numpy.random.randint(len(cars))
-			self.clusters[car].extend(passenger["startCoords"], passenger["endCoords"])
-		return MultiAgent.getPaths(self.clusters)
+	def getClusters(self):
+		for car in self.cars:
+			self.clusters[car.IDnumber] = []
+		for passenger in self.passengers:
+			car = numpy.random.randint(0, len(self.cars))
+			self.clusters[self.cars[car].IDnumber].append(passenger)
 
+	def getPaths(self):
+		paths = dict()
+		for car in self.cars:
+			points = list()
+			cluster = self.clusters[car.IDnumber]
+			front = list()
+			endpts = dict()
+			for c in cluster:
+				front.append(c["startCoords"])
+				endpts[c["startCoords"]] = c["endCoords"]
+			while len(front) > 0:
+				pt = front.pop(numpy.random.randint(0, len(front)))
+				if pt in endpts:
+					front.append(endpts[pt])
+					del endpts[pt]
+				points.append(pt)
+			paths[car.IDnumber] = points
+		return paths

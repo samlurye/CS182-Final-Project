@@ -162,6 +162,50 @@ class World:
                 obstacle.update(self)
             
             pygame.display.update()
+
+    def randomAgentPickup(self):
+        self.initPassengerPickup()
+        endpts = dict()
+        startpts = dict()
+        for cust in self.customers.waitingCustomers:
+            endpts[cust["endCoords"]] = cust["numCustomer"]
+            startpts[cust["startCoords"]] = cust["numCustomer"]
+        
+        randomAgent = RandomMultiAgent(self.cars, self.customers, self)
+
+        randomAgent.getClusters()
+        paths = randomAgent.getPaths()
+
+        while len(self.customers.waitingCustomers) > 0 or len(self.customers.drivingCustomers) > 0:
+            for event in pygame.event.get():
+                pass
+            self.screen.fill((255, 255, 255))
+            for car in self.cars:
+                if not car.currentPath and len(paths[car.IDnumber]) > 0:
+                    print paths
+                    nextpt = paths[car.IDnumber].pop(0)
+                    car.setPath(car.xy, nextpt, self)
+                elif car.currentPath and car.i >= len(car.currentPath) - 1:
+                    if car.endPoints:
+                        print car.endPoints
+                        if car.endPoints[1] in endpts:
+                            print "dropping off"
+                            self.customers.finishedRide(self, endpts[car.endPoints[1]])
+                        elif car.endPoints[1] in startpts:
+                            print "picking up"
+                            self.customers.pickupCustomer(self, startpts[car.endPoints[1]])
+                    if(len(paths[car.IDnumber]) > 0):
+                        print paths
+                        nextpt = paths[car.IDnumber].pop(0)
+                        car.setPath(car.xy, nextpt, self)
+                car.update(self)
+                self.customers.update(self)
+                self.clock.tick(self.frameRate)
+            
+            for obstacle in self.obstacles:
+                obstacle.update(self)
+            
+            pygame.display.update()
             
 
     def initPathEfficiencyTracker(self):
@@ -215,7 +259,7 @@ class World:
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
             self.mapWorld(2000)
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
-            self.initPassengerPickup()
+            self.randomAgentPickup()
         if self.mode == World.DATA_COLLECTION or self.mode == World.MAP_AND_SHOW_PRM:
             if self.mode == World.MAP_AND_SHOW_PRM:
                 self.obstacles = self.obstacles[:4] + self.obstacles[10:]
