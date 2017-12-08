@@ -61,9 +61,9 @@ class World:
             Obstacle(300, 0, 300, 75)
         ]
 
+        # the obstacles the car *thinks* exist
         self.obstacleBeliefs = self.obstacles[:]
 
-        ### please just use this I promise everything you have is going to work ###
         
         self.mode = World.options[sys.argv[1]]
 
@@ -80,6 +80,7 @@ class World:
 
         ###########################################################################
 
+    # sample integer coordinates from the world
     def sampleInt(self):
         point = (random.randint(0, self.displayWidth), random.randint(0, self.displayHeight))
         for obstacle in self.obstacles:
@@ -106,7 +107,6 @@ class World:
                     self.cars[len(self.cars) - 1].prm = self.prm
                     break
         
-
     def initDataCollection(self):
         self.cars = [DataCollectionAgent(0.45 * self.displayWidth, 0.8 * self.displayWidth, self, 0)]
         self.numCars = 1
@@ -199,7 +199,7 @@ class World:
             pygame.display.update()
             self.clock.tick(self.frameRate)
         self.cars[0].buildMap()
-        self.cars[0].thresh(0.01)
+        self.cars[0].thresh(0.2)
         self.cars[0].drawMap(self)
         self.obstacleCorners = self.cars[0].getObstacles(self)
         self.obstacleBeliefs = self.obstacles[:4]
@@ -210,9 +210,10 @@ class World:
             height = abs(self.obstacleCorners[i + 1][1] - y)
             self.obstacleBeliefs.append(Obstacle(x, y, width, height, (0, 0, 0)))
 
+    # main game function
     def run(self):
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
-            self.mapWorld(2000)
+            self.mapWorld(5000)
 
             if self.mode == World.MAP_ONLY:
                 return

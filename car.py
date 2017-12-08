@@ -81,7 +81,8 @@ class Car:
             dist[i] = dist[i] / tot
 
 class MappingAgent(Car):
-""" agent that navigates autonomously and maps the world"""
+
+    """ agent that navigates autonomously and maps the world"""
 
     def __init__(self, x, y, world, idnum):
         Car.__init__(self, x, y, world, idnum)
