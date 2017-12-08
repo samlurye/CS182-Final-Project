@@ -92,6 +92,7 @@ class World:
     def initPassengerPickup(self):
         self.customers = Customers(self)
         self.numCars = 5
+        self.prm = PRM(self)
         for i in range(20):
             self.customers.newCustomer(self)
         for i in range(self.numCars):
@@ -204,6 +205,9 @@ class World:
             
             for obstacle in self.obstacles:
                 obstacle.update(self)
+
+            for obstacle in self.obstacleBeliefs:
+                obstacle.update(self)
             
             pygame.display.update()
             
@@ -261,12 +265,9 @@ class World:
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
             self.randomAgentPickup()
         if self.mode == World.DATA_COLLECTION or self.mode == World.MAP_AND_SHOW_PRM:
-            if self.mode == World.MAP_AND_SHOW_PRM:
-                self.obstacles = self.obstacles[:4] + self.obstacles[10:]
             self.initDataCollection()
         if self.mode == World.RANDOM_NAV:
             self.initRandom()
-
         if self.mode == World.MULTIAGENT_PICKUP:
             self.multiAgentPickup()
 
