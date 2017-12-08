@@ -11,7 +11,9 @@ def AStarSearch(edges, start, goal, eps):
     for neighbor in edges[start]:
         cost = dist(neighbor, start)
         heapq.heappush(queue, (cost + dist(neighbor, goal), dict(path = [neighbor], cost = cost)))
-    while len(queue) != 0:
+    i = 0
+    while len(queue) != 0 and i < 2500:
+        i += 1
         currentInfo = heapq.heappop(queue)[1]
         current = currentInfo["path"][-1]
         if dist(current, goal) <= eps:
@@ -31,6 +33,7 @@ def AStarSearch(edges, start, goal, eps):
                     path = currentInfo["path"][:]
                     path.append(succ)
                     heapq.heappush(queue, (newCost + h, dict(path = path, cost = newCost)))
+    return []
 
 def dist(p1, p2):
     d = 0
@@ -55,7 +58,9 @@ class RRT:
 
     # run the algorithm and return a path from start to goal
     def run(self, world):
-        while True:
+        i = 0
+        while i < 2500:
+            i += 1
             s1 = self.sample(world)
             s = self.tree.kNearestNeighbors(s1, 1, [])[0][0]
             s1e = self.extend(s, s1, world)
@@ -72,8 +77,8 @@ class RRT:
                 except:
                     self.connections[s1e] = set([s])
                 if dist(s1e, self.goal) < self.eps:
-                    break
-        return AStarSearch(self.connections, self.start, self.goal, self.eps)
+                    return AStarSearch(self.connections, self.start, self.goal, self.eps)
+        return []
 
     # sample world uniformly
     def sample(self, world):
@@ -219,7 +224,7 @@ class PRM:
             self.insertConnection(p2, world)
         path = AStarSearch(self.connections, p1, p2, 5)
         # use RRT if no path exists along prm
-        while not path:
+        if not path:
             path = RRT(p1, p2).run(world)
         return path
 

@@ -83,7 +83,7 @@ class World:
     # sample integer coordinates from the world
     def sampleInt(self):
         point = (random.randint(0, self.displayWidth), random.randint(0, self.displayHeight))
-        for obstacle in self.obstacles:
+        for obstacle in self.obstacles + self.obstacleBeliefs:
             if obstacle.colliderect((point[0] - self.carSize[0] / 2.,
                 point[1] - self.carSize[1] / 2., self.carSize[0], self.carSize[1])):
                 return self.sampleInt()
@@ -213,7 +213,7 @@ class World:
     # main game function
     def run(self):
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
-            self.mapWorld(5000)
+            self.mapWorld(2000)
 
             if self.mode == World.MAP_ONLY:
                 return

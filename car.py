@@ -363,6 +363,9 @@ class DataCollectionAgent(NavigationAgent):
         self.mode = 0
 
     def update(self, world):
+        if self.endPoints:
+            pygame.draw.rect(world.screen, (0, 255, 255), (self.endPoints[0][0], self.endPoints[0][1], 10, 10))
+            pygame.draw.rect(world.screen, (255, 255, 0), (self.endPoints[1][0], self.endPoints[1][1], 10, 10))
         # update the agent's position in the path
         if self.i < len(self.currentPath) - 1:
             self.xy = self.currentPath[self.i + 1]
@@ -378,7 +381,7 @@ class DataCollectionAgent(NavigationAgent):
                 else:
                     print "RRT L " + str(self.pathLength) + "\n"
             if self.mode == 0:
-                self.endPoints = (self.prm.sample(world), self.prm.sample(world))
+                self.endPoints = (world.sampleInt(), world.sampleInt())
                 print "PRM P " + str(self.endPoints[0][0]) + " " + str(self.endPoints[0][1]) + " " + \
                         str(self.endPoints[1][0]) + " " + str(self.endPoints[1][1])
                 start = time.clock()
