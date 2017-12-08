@@ -21,7 +21,7 @@ class Obstacle(pygame.Rect):
     def update(self, world):
         pygame.draw.rect(world.screen, self.color, self)
 
-    # check to see if point inside obstacle
+    # check to see if point inside obstacle, or within radius distance of obstacle
     def collidepoint(self, point, radius=0):
         return round(point[0]) >= self.corners[Obstacle.TOPLEFT][0] - radius and round(point[1]) >= self.corners[Obstacle.TOPLEFT][1] - radius and \
                 round(point[0]) <= self.corners[Obstacle.BOTTOMRIGHT][0] + radius and round(point[1]) <= self.corners[Obstacle.BOTTOMRIGHT][1] + radius

@@ -21,6 +21,7 @@ def rot_center(image, angle):
 class Car:
 
     def __init__(self, x, y, world, IDnum):
+        # picture from -- https://opengameart.org/sites/default/files/simple-travel-car-top_view.svg
         self.orig_image = pygame.transform.scale(pygame.image.load('car.png'), (20, 20)) # original, unrotated car image
         self.image = self.orig_image.copy()     # image that actually gets rendered for the user
         self.size = self.image.get_size()       # dimensions of the user 

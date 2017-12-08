@@ -40,14 +40,20 @@ def dist(p1, p2):
 
 class RRT:
 
+    """Naive 2-D RRT that doesn't incorporate dynamics into the system"""
+
     def __init__(self, start, goal):
         self.start = start
         self.goal = goal
+        # distance within which tree has 'reached' the goal
         self.eps = 5
+        # extension distance
         self.ext = 10
         self.tree = KDTree(len(self.start), [self.start])
+        # edges
         self.connections = dict()
 
+    # run the algorithm and return a path from start to goal
     def run(self, world):
         while True:
             s1 = self.sample(world)
@@ -69,11 +75,13 @@ class RRT:
                     break
         return AStarSearch(self.connections, self.start, self.goal, self.eps)
 
+    # sample world uniformly
     def sample(self, world):
         if random.random() < 0.05:
             return self.goal
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
         for obstacle in world.obstacleBeliefs:
+            # make sure the point is at least carsize / 2 away from the nearest obstacle
             if obstacle.colliderect((point[0] - world.cars[0].size[0] / 2.,
                 point[1] - world.cars[0].size[1] / 2., world.cars[0].size[0], world.cars[0].size[1])):
                 return self.sample(world)
@@ -90,6 +98,8 @@ class RRT:
         return newPoint
 
 class DynamicRRT(RRT):
+
+    """4-dimensional RRT that incorporates physics into the system"""
 
     def sample(self, world):
         if random.random() < 0.05:
@@ -164,6 +174,7 @@ class PRM:
         # edges of the prm
         self.connections = self.getConnections(world)
 
+    # uniformly sample floating point coordinates from the world
     def sample(self, world):
         point = (random.random() * world.displayWidth, random.random() * world.displayHeight)
         for obstacle in world.obstacleBeliefs:
@@ -172,6 +183,7 @@ class PRM:
                 return self.sample(world)
         return point
 
+    # uniformly sample integer coordinates from the world
     def sampleInt(self, world):
         point = (random.randint(0, world.displayWidth), random.randint(0, world.displayHeight))
         for obstacle in world.obstacleBeliefs:
@@ -180,10 +192,12 @@ class PRM:
                 return self.sampleInt(world)
         return point
 
+    # fill the KD tree
     def getPoints(self, world):
         for _ in range(self.size - 1):
             self.points.insert(self.sample(world))
 
+    # ignore this function
     def getPaths(self, world):
         paths = Paths()
         for p1 in self.connections:
