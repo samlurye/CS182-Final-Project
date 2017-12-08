@@ -214,9 +214,6 @@ class World:
     def run(self):
         if self.mode == World.MAP_ONLY or self.mode == World.MAP_AND_PICKUP or self.mode == World.MAP_AND_SHOW_PRM:
             self.mapWorld(2000)
-
-            if self.mode == World.MAP_ONLY:
-                return
         if self.mode == World.PASSENGER_PICKUP or self.mode == World.MAP_AND_PICKUP:
             self.initPassengerPickup()
         if self.mode == World.DATA_COLLECTION or self.mode == World.MAP_AND_SHOW_PRM:
